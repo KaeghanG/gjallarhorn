@@ -2,6 +2,8 @@
 
 Everything Gjallarhorn does, page by page. For a code map see [ARCHITECTURE.md](ARCHITECTURE.md).
 
+**Related guides:** [Getting started](GETTING-STARTED.md) · [Controls](CONTROLS.md) · [Emulators](EMULATORS.md) · [Settings reference](SETTINGS.md) · [FAQ](FAQ.md) · [Troubleshooting](TROUBLESHOOTING.md)
+
 **Contents:** [Libraries and launching](#libraries-and-launching) · [Couch mode](#couch-mode) · [Sidebar](#sidebar) · [In-game menu](#in-game-menu) · [Friends and chat](#friends-and-chat) · [Steam Workshop](#steam-workshop) · [Achievements](#achievements) · [Downloads](#downloads) · [Quick access](#quick-access) · [Controllers](#controllers) · [Play reports](#play-reports) · [Emulators and cover art](#emulators-and-cover-art) · [Themes, fonts and backgrounds](#themes-fonts-and-backgrounds) · [Splash screens](#splash-screens) · [Desktop extras](#desktop-extras)
 
 ---
@@ -151,7 +153,10 @@ Every game you start from Gjallarhorn is tracked. When it closes you get a repor
 Gjallarhorn detects emulators you have installed (**Eden/yuzu-family for Switch, Dolphin, PCSX2, RPCS3, Cemu, Ryujinx, DuckStation, RetroArch** and more) and scans the ROM folders you choose, launching each ROM with the right emulator and arguments.
 
 - **Covers find themselves:** libretro-thumbnails for most systems, and a public Switch title database for Switch games (downloaded once, then cached).
+- **RetroAchievements:** add your username and web API key in **Settings, Launcher** to see your retro achievements on the Retro page.
 - **It never downloads ROMs, BIOS files, firmware or keys.** Supply your own.
+
+See [EMULATORS.md](EMULATORS.md) for every supported system and emulator.
 
 ![Couch emulators](screenshots/couch-emulators.jpg)
 

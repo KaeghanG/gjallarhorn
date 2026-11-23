@@ -8,7 +8,7 @@
 
 A free, open-source Windows game launcher and **Big-Picture-style couch mode** that brings Steam, Epic, GOG, Ubisoft, EA, Battle.net, Riot and your emulators into one fast, controller-first, endlessly customisable front end.
 
-[**Download**](../../releases/latest) · [**Features**](docs/FEATURES.md) · [**Architecture**](docs/ARCHITECTURE.md) · [**Website**](https://KaeghanG.github.io/gjallarhorn/)
+[**Download**](../../releases/latest) · [**Get started**](docs/GETTING-STARTED.md) · [**Features**](docs/FEATURES.md) · [**Controls**](docs/CONTROLS.md) · [**FAQ**](docs/FAQ.md) · [**Architecture**](docs/ARCHITECTURE.md) · [**Website**](https://KaeghanG.github.io/gjallarhorn/)
 
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-1f6feb?style=flat-square)
 ![Electron](https://img.shields.io/badge/Electron-45-47848f?style=flat-square)
@@ -119,6 +119,59 @@ Works anywhere a controller is plugged in: in a game, on the desktop, over an em
 Price comparison across stores, free games, wishlist with price-drop alerts, bundles, storage manager, OptiScaler helper, per-game tweaks with backup/restore, a global quick launcher (Ctrl + Shift + Space), command palette, game roulette and a tray icon.
 
 ---
+
+## How it works
+
+1. **Discovery.** Gjallarhorn reads what your launchers already installed: Steam's app manifests, Epic's install list, the Windows registry entries of GOG / Ubisoft / EA / Battle.net, Riot's client file and your Steam shortcuts. It does not log in to any store.
+2. **Launching.** Pressing **A** starts the game exactly as the store would (`steam://rungameid/...`, the Epic launcher link, or the game's executable). For games it launches, it also tracks the process so it can show play reports, back up saves, bring the game back to the front, and return to you when it closes.
+3. **Controllers.** A small background process reads XInput (Xbox) and the Windows joystick API (PlayStation) so the controller keeps working even when another window has focus. That is how **Back + Start** opens the menu over a running game.
+4. **Couch mode** is the same React app rendered full screen with a controller-first navigation model: rows of tiles, a tab bar, a slide-out sidebar, and pages that each receive controller input.
+5. **Everything is local.** Settings, chat history, play reports and cached art live in `%APPDATA%\Gjallarhorn`.
+
+---
+
+## Gjallarhorn vs. Steam Big Picture
+
+| | Steam Big Picture | Gjallarhorn |
+|---|---|---|
+| Steam library | Yes | Yes |
+| Epic, GOG, Ubisoft, EA, Battle.net, Riot in the same UI | No | **Yes** |
+| Emulated games with auto cover art | Manual non-Steam shortcuts | **Detected, scanned, art fetched** |
+| Menu over a running game | Guide button (Steam overlay) | **Hold Back + Start, also over emulators and the desktop** |
+| Steam friends and chat | Yes | Yes (on-screen keyboard, saved history) |
+| Steam Workshop | Via Steam | Browse and subscribe in-app |
+| Themes, fonts, animated backgrounds, splash screens | Limited | **12 presets, fire/embers/video backgrounds, 26 fonts, 5 intros** |
+| Play reports with GPU charts | No | **Yes** |
+| Hides the Windows taskbar | Yes | Yes |
+| Open source | No | **Yes (MIT)** |
+
+Gjallarhorn is a front end and needs the stores it launches games through; it does not replace Steam's download, DRM or cloud systems.
+
+---
+
+## Documentation
+
+| Guide | What's inside |
+|---|---|
+| [Getting started](docs/GETTING-STARTED.md) | Install, first launch, API key, couch mode, chat, emulators |
+| [Feature guide](docs/FEATURES.md) | Every feature, page by page, with screenshots |
+| [Controls](docs/CONTROLS.md) | Every button on every screen, keyboard shortcuts |
+| [Emulators](docs/EMULATORS.md) | Supported systems, emulators, cover art |
+| [Settings reference](docs/SETTINGS.md) | Every setting and its stored key |
+| [FAQ](docs/FAQ.md) | Safety, stores, controllers, privacy |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Symptom-by-symptom fixes |
+| [Architecture](docs/ARCHITECTURE.md) | Code map for contributors |
+| [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) | Where it's going and how to help |
+
+---
+
+## Under the hood
+
+- **Electron 45** (main + sandboxed preload with a typed IPC bridge), **React 19**, **Vite**, **framer-motion**, **lucide-react**
+- **steam-user** for Steam chat and the Workshop subscription session
+- A PowerShell watcher for XInput / winmm controllers and for hiding the taskbar
+- **electron-builder** (NSIS) for the Windows installer
+- Light on dependencies: no analytics, no UI kit, no database
 
 ## Controller cheat sheet
 

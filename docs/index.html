@@ -57,6 +57,7 @@ kbd { background: rgba(255,255,255,.1); border: 1px solid var(--line); border-ra
 .steps li::before { content: counter(s); position:absolute; left: 18px; top: 14px; width: 34px; height: 34px; border-radius: 50%; display:grid; place-items:center; font-weight: 900; color:#1a1405; background: var(--gold); }
 code { background: rgba(255,255,255,.08); padding: 2px 8px; border-radius: 6px; font-size: 14px; }
 footer { margin-top: 90px; padding: 36px 0 60px; border-top: 1px solid var(--line); color: var(--muted); text-align:center; font-size: 14px; }
+.faq { display:grid; gap: 10px; margin-top: 24px; } details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; } summary { cursor: pointer; font-weight: 700; } details[open] { border-color: rgba(240,200,105,.45); } details p { color: var(--muted); margin: 10px 0 2px; }
 .note { font-size: 13px; color: var(--muted); margin-top: 18px; }
 @media (max-width: 720px) { nav { display:none; } .hero { padding-top: 56px; } .story { padding: 22px; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -69,7 +70,7 @@ footer { margin-top: 90px; padding: 36px 0 60px; border-top: 1px solid var(--lin
   <div class="wrap bar">
     <a class="brand" href="#top"><img src="icon.png" alt="" />GJALLARHORN</a>
     <nav aria-label="Main">
-      <a href="#features">Features</a><a href="#gallery">Gallery</a><a href="#custom">Customise</a><a href="#controller">Controller</a><a href="#install">Install</a>
+      <a href="#features">Features</a><a href="#gallery">Gallery</a><a href="#custom">Customise</a><a href="#how">How it works</a><a href="#controller">Controller</a><a href="#faq">FAQ</a><a href="#install">Install</a>
     </nav>
     <a class="btn" style="padding:9px 18px" href="https://github.com/KaeghanG/gjallarhorn/releases/latest">Download</a>
   </div>
@@ -140,6 +141,28 @@ footer { margin-top: 90px; padding: 36px 0 60px; border-top: 1px solid var(--lin
   </div>
 </div></section>
 
+<section id="how"><div class="wrap">
+  <div class="eyebrow">Under the hood</div>
+  <h2>How it works</h2>
+  <div class="grid">
+    <div class="card"><div class="ico">🔎</div><h3>1. It reads, it doesn't log in</h3><p>Gjallarhorn reads what Steam, Epic, GOG, Ubisoft, EA, Battle.net and Riot already installed. No store passwords, no accounts.</p></div>
+    <div class="card"><div class="ico">🚀</div><h3>2. Games start the normal way</h3><p>Play launches the game through its own store, so DRM, anti-cheat and cloud saves work exactly as before.</p></div>
+    <div class="card"><div class="ico">🎛️</div><h3>3. A background controller layer</h3><p>A tiny helper reads Xbox and PlayStation pads even when another window has focus. That is how Back + Start works over a running game.</p></div>
+    <div class="card"><div class="ico">🔒</div><h3>4. Everything stays local</h3><p>Settings, chat history, play reports and cached art live on your PC. No telemetry, ever.</p></div>
+  </div>
+  <table>
+    <thead><tr><th></th><th>Steam Big Picture</th><th>Gjallarhorn</th></tr></thead>
+    <tbody>
+      <tr><td>Other stores in the same UI</td><td>No</td><td>Epic, GOG, Ubisoft, EA, Battle.net, Riot</td></tr>
+      <tr><td>Emulators with auto cover art</td><td>Manual shortcuts</td><td>Detected, scanned, art fetched</td></tr>
+      <tr><td>Menu over a running game</td><td>Guide button (Steam overlay)</td><td>Hold Back + Start, also over emulators and the desktop</td></tr>
+      <tr><td>Themes, fonts, animated backgrounds</td><td>Limited</td><td>12 presets, fire / embers / video, 26 fonts, 5 intros</td></tr>
+      <tr><td>Play reports with GPU charts</td><td>No</td><td>Yes</td></tr>
+      <tr><td>Open source</td><td>No</td><td>Yes (MIT)</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
 <section id="controller"><div class="wrap">
   <div class="eyebrow">Controller</div>
   <h2>Works with Xbox and PlayStation pads</h2>
@@ -156,6 +179,21 @@ footer { margin-top: 90px; padding: 36px 0 60px; border-top: 1px solid var(--lin
       <tr><td><kbd>Back</kbd> + <kbd>Start</kbd> (hold)</td><td>Open the menu anywhere: in a game, on the desktop, over an emulator</td></tr>
     </tbody>
   </table>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="eyebrow">Questions</div>
+  <h2>FAQ</h2>
+  <div class="faq">
+    <details><summary>Does it replace Steam?</summary><p>It replaces Steam's front end (Big Picture), not Steam itself. Steam games still run through Steam, so Steam must be running.</p></details>
+    <details><summary>Is it safe?</summary><p>It is free, open source and has no account, ads or telemetry. The installer is not code-signed yet, so Windows SmartScreen warns the first time: choose More info, then Run anyway.</p></details>
+    <details><summary>Do I have to log in to Epic, GOG or Ubisoft in the app?</summary><p>No. It reads what those launchers installed and starts games through them.</p></details>
+    <details><summary>Why not the Home button for the menu?</summary><p>Steam grabs the Guide button for its own overlay. Back + Start is something Steam does not intercept, so it always works. Gjallarhorn also closes Steam's Big Picture window if the Guide button opens it.</p></details>
+    <details><summary>Which controllers work?</summary><p>Xbox (XInput) and PlayStation DualSense / DualShock, plus most pads Windows exposes. A keyboard works too.</p></details>
+    <details><summary>Does it include ROMs or BIOS?</summary><p>Never. It does not download, host or help find ROMs, BIOS files, firmware or keys. Cover art comes from the libretro-thumbnails project and a public Switch title list.</p></details>
+    <details><summary>Does it work on Linux or Steam Deck?</summary><p>No. It uses Windows features (PowerShell, XInput, Win32).</p></details>
+  </div>
+  <p class="note">More answers in the <a href="https://github.com/KaeghanG/gjallarhorn/blob/main/docs/FAQ.md">full FAQ</a>, <a href="https://github.com/KaeghanG/gjallarhorn/blob/main/docs/GETTING-STARTED.md">getting started guide</a> and <a href="https://github.com/KaeghanG/gjallarhorn/blob/main/docs/TROUBLESHOOTING.md">troubleshooting</a>.</p>
 </div></section>
 
 <section id="story"><div class="wrap">
