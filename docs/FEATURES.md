@@ -4,7 +4,7 @@ Everything Gjallarhorn does, page by page. For a code map see [ARCHITECTURE.md](
 
 **Related guides:** [Getting started](GETTING-STARTED.md) · [Controls](CONTROLS.md) · [Emulators](EMULATORS.md) · [Settings reference](SETTINGS.md) · [FAQ](FAQ.md) · [Troubleshooting](TROUBLESHOOTING.md)
 
-**Contents:** [Libraries and launching](#libraries-and-launching) · [Couch mode](#couch-mode) · [Sidebar](#sidebar) · [In-game menu](#in-game-menu) · [Friends and chat](#friends-and-chat) · [Steam Workshop](#steam-workshop) · [Achievements](#achievements) · [Downloads](#downloads) · [Quick access](#quick-access) · [Controllers](#controllers) · [Play reports](#play-reports) · [Emulators and cover art](#emulators-and-cover-art) · [Themes, fonts and backgrounds](#themes-fonts-and-backgrounds) · [Splash screens](#splash-screens) · [Desktop extras](#desktop-extras)
+**Contents:** [Libraries and launching](#libraries-and-launching) · [Couch mode](#couch-mode) · [Sidebar](#sidebar) · [In-game menu](#in-game-menu) · [Friends and chat](#friends-and-chat) · [Steam Workshop](#steam-workshop) · [Achievements](#achievements) · [Downloads](#downloads) · [Quick access](#quick-access) · [Controllers](#controllers) · [Screenshots and clips](#screenshots-and-clips) · [Saves and backups](#saves-and-backups) · [Play reports](#play-reports) · [Emulators and cover art](#emulators-and-cover-art) · [Themes, fonts and backgrounds](#themes-fonts-and-backgrounds) · [Splash screens](#splash-screens) · [Desktop extras](#desktop-extras)
 
 ---
 
@@ -147,6 +147,22 @@ PlayStation pads show an "unknown" battery because Windows does not expose it.
 One shelf for everything you capture: screenshots from Steam and Gjallarhorn, and video clips from Windows Game Bar, NVIDIA Instant Replay / ShadowPlay and Steam recordings. Filter by screenshots, clips or game, open a capture in a viewer (clips play in the app), copy a screenshot to the clipboard, or show it in its folder.
 
 **How to open:** desktop sidebar → **Shots & clips**; couch sidebar → **Screenshots & clips**. Gjallarhorn does not record video itself; it lists what those tools save and can trigger Game Bar.
+
+---
+
+## Saves and backups
+
+Gjallarhorn looks up where a game keeps its save files (from [PCGamingWiki](https://www.pcgamingwiki.com)'s "Game data/saves" entries) and can back that folder up automatically.
+
+- **Automatic backups.** Turn on *Back up saves when I quit a game* (Settings → Save backups, on by default). Every time you quit a game you launched from Gjallarhorn, it zips the save folder it found for that game. Short or very first sessions still get backed up.
+- **Back up on demand.** On a game's page, open the **Saves & playtime** panel and press **Back up now**.
+- **Where backups go.** `Documents\Gjallarhorn Saves\<Game Name>\<timestamp>.zip` by default, or wherever you set *Save backup root folder* to. Each zip has a matching `<name>.zip.json` file next to it — that is how Gjallarhorn knows what it backed up and where it came from, so **keep the two files together**. The folder-open button next to *Backups* on the game page jumps straight there.
+- **How many are kept.** The newest 10 backups per game; older ones are deleted automatically.
+- **Restoring a backup.** On the game's page, open **Saves & playtime**, find the backup by date under *Backups*, and press **Restore**. Gjallarhorn backs up whatever is currently in the save folder first (tagged *before restore*), then extracts the chosen zip over it — so a restore can always be undone the same way.
+- **Moving backups to a new PC, or restoring one by hand.** Restore (above) only works through Gjallarhorn, and only for a `.zip` + `.zip.json` pair it made itself. To bring backups to a different PC: copy the whole `<Game Name>` folder (both the `.zip` files and their `.zip.json` files) into the new PC's *Save backup root folder*, then use Restore from the game's page as normal. To restore one entirely by hand instead — for example before you ever open Gjallarhorn on the new PC — the `.zip` is a plain archive: open it with any zip tool and copy its contents into the game's real save folder yourself.
+- **Limits.** The save location comes from PCGamingWiki, so an undocumented or very new game may show no location (play it once; cloud-save-only games may never have a local folder to find). Nothing is backed up until Gjallarhorn finds an existing save folder to copy.
+
+**How to open:** a game's page → **Saves & playtime**. Settings for this live under Settings → **Save backups**.
 
 ---
 

@@ -54,6 +54,8 @@ Applied while a game launched from Gjallarhorn is running; undone automatically 
 | Back up saves when I quit a game | Creates versioned `.zip` backups of save-game folders (locations discovered from PCGamingWiki). Keeps the newest 10 per game. | On (`true`) | `autoBackup` |
 | Save backup root folder | Where backup zips are stored. The button opens a folder picker to change it. | Empty = defaults to `Documents\Gjallarhorn Saves` | `saveRoot` |
 
+Restoring a backup, or moving backups to a new PC, is on a game's page ("Saves & playtime"), not here — see [Saves and backups](FEATURES.md#saves-and-backups) in the feature guide.
+
 ---
 
 ## Steam chat

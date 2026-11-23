@@ -39,6 +39,8 @@ Find your symptom, try the fixes in order. If none help, open an issue and inclu
 | Resume doesn't bring the game to the front | Some exclusive-fullscreen games ignore focus requests. Switch the game to borderless fullscreen. |
 | Close game does nothing | It asks the game to close, then force-closes it after 6 seconds. If the game was started outside Gjallarhorn, it is not tracked; use Task Manager. |
 | No play report after a session | Reports are recorded only for games started from Gjallarhorn, and GPU numbers need an NVIDIA GPU. |
+| No save backups, or "No save location known" | PCGamingWiki has no entry for this game, or the save folder has not been created yet (play once first). Check the path shown on the game's **Saves & playtime** panel. |
+| Restore button is missing for a backup I copied in | Restore needs the backup's matching `.zip.json` file (next to the `.zip`, same name) — Gjallarhorn writes that itself and reads it to know where to restore to. See [Saves and backups](FEATURES.md#saves-and-backups) for moving backups to a new PC. |
 
 ## Friends and Workshop
 
