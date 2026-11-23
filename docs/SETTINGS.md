@@ -76,7 +76,7 @@ Configured in the embedded `ChatSettings` component (login is by QR scan in the 
 | UI name | What it does | Default | Key |
 |---|---|---|---|
 | Quick launcher hotkey | Global hotkey that opens a search overlay to launch any game or emulator from anywhere. Alt+Space is avoided because PowerToys Run uses it. | `Control+Shift+Space` | `quickHotkey` |
-| Controller combo opens Couch mode from anywhere | Hold the selected button combination (~1 second) even on the desktop or with Gjallarhorn minimized to tray. Xbox-style controllers work directly; PlayStation/Switch require Steam running. | `back+start` (View + Menu) | `padCombo` |
+| Controller combo opens Couch mode from anywhere | Hold Back + Start (Share + Options on PlayStation) for about a second, even on the desktop or with Gjallarhorn minimized to tray. The combination is fixed. | on | `globalPadCombo` |
 | Global controller input | When enabled, reads controller input system-wide (even when Gjallarhorn is hidden). Used by the combo above and couch mode navigation. | On (`true`) | `globalPadCombo` |
 | Free GPU memory from local AI when a game starts | Unloads Ollama models from VRAM (`ollama stop`) before a game launches; reloads them on the next AI request after the game quits. | On (`true`) | `aiSwitch` |
 | Keep running in the tray when closed | Gjallarhorn stays in the system tray on close so the hotkey, price alerts and emulator update checks keep working. Quit from the tray icon instead. | On (`true`) | `closeToTray` |
@@ -98,8 +98,6 @@ Configured in the embedded `ChatSettings` component (login is by QR scan in the 
 | Value | Display name |
 |---|---|
 | `back+start` | View + Menu (Back + Start) |
-| `lb+rb+start` | LB + RB + Menu |
-| `ls+rs` | Click both sticks |
 
 ---
 

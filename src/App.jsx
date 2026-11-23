@@ -4,31 +4,33 @@ import { Sky, TitleBar, Sidebar } from './components/Shell.jsx';
 import { ToastProvider, useToast } from './components/ui.jsx';
 import { gamesByIds, money, setRegion, getRegion } from './api.js';
 import Home from './pages/Home.jsx';
-import StorePage from './pages/Store.jsx';
 import Library from './pages/Library.jsx';
-import Emulators from './pages/Emulators.jsx';
-import Wishlist from './pages/Wishlist.jsx';
-import SettingsPage from './pages/Settings.jsx';
 import { applyFonts } from './data/fonts.js';
 import ThemeBackground from './components/ThemeBackground.jsx';
 import Splash from './components/couch/Splashes.jsx';
 import CouchSplash from './components/couch/CouchSplash.jsx';
-import FriendsPage from './pages/Friends.jsx';
-import WorkshopPage from './pages/Workshop.jsx';
-import ReportsPage from './pages/Reports.jsx';
-import DownloadsPage from './pages/Downloads.jsx';
-import GameDetail from './pages/GameDetail.jsx';
-import Retro from './pages/Retro.jsx';
-import Controllers from './pages/Controllers.jsx';
-import Storage from './pages/Storage.jsx';
-import Roulette from './components/Roulette.jsx';
-import SessionReport from './components/SessionReport.jsx';
-import Welcome from './components/Welcome.jsx';
 import ChatInvites from './components/ChatInvites.jsx';
-import CommandPalette from './components/CommandPalette.jsx';
 import { DesktopLaunch } from './components/LaunchScreen.jsx';
-import CouchMode, { usePadCombo } from './components/CouchMode.jsx';
+import usePadCombo from './usePadCombo.js';
 
+const StorePage = lazy(() => import('./pages/Store.jsx'));
+const Emulators = lazy(() => import('./pages/Emulators.jsx'));
+const Wishlist = lazy(() => import('./pages/Wishlist.jsx'));
+const SettingsPage = lazy(() => import('./pages/Settings.jsx'));
+const FriendsPage = lazy(() => import('./pages/Friends.jsx'));
+const WorkshopPage = lazy(() => import('./pages/Workshop.jsx'));
+const ReportsPage = lazy(() => import('./pages/Reports.jsx'));
+const DownloadsPage = lazy(() => import('./pages/Downloads.jsx'));
+const GameDetail = lazy(() => import('./pages/GameDetail.jsx'));
+const Retro = lazy(() => import('./pages/Retro.jsx'));
+const Controllers = lazy(() => import('./pages/Controllers.jsx'));
+const Storage = lazy(() => import('./pages/Storage.jsx'));
+const Roulette = lazy(() => import('./components/Roulette.jsx'));
+const SessionReport = lazy(() => import('./components/SessionReport.jsx'));
+const Welcome = lazy(() => import('./components/Welcome.jsx'));
+const CommandPalette = lazy(() => import('./components/CommandPalette.jsx'));
+const CouchMode = lazy(() => import('./components/CouchMode.jsx'));
+const ShotsPage = lazy(() => import('./pages/Screenshots.jsx'));
 const Bundles = lazy(() => import('./pages/Bundles.jsx'));
 
 const pageAnim = {
@@ -159,6 +161,7 @@ function Inner() {
     workshop: <WorkshopPage library={library} />,
     reports: <ReportsPage />,
     downloads: <DownloadsPage />,
+    screenshots: <ShotsPage />,
     wishlist: <Wishlist {...ctx} />,
     settings: <SettingsPage {...ctx} />,
   };
@@ -173,11 +176,12 @@ function Inner() {
         <main className="main">
           <AnimatePresence mode="wait">
             <motion.div key={page + region} className="page" {...pageAnim}>
-              {region ? pages[page] : null}
+              <Suspense fallback={null}>{region ? pages[page] : null}</Suspense>
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
+      <Suspense fallback={null}>
       <AnimatePresence>{detail && <GameDetail key="detail" game={detail} onClose={() => setDetail(null)} {...ctx} />}</AnimatePresence>
       <CommandPalette open={palette} onClose={() => setPalette(false)} games={library.games} onNavigate={navTo} onOpenStore={(g) => { setPalette(false); openGame(g); }} onSearchStore={goSearch} />
       <AnimatePresence>{roulette && <Roulette key="roulette" library={library} onClose={() => setRoulette(false)} />}</AnimatePresence>
@@ -186,7 +190,7 @@ function Inner() {
       <AnimatePresence>{settings && !settings.onboarded && !couch && <Welcome key="welcome" settings={settings} saveSettings={saveSettings} onDone={() => setSettings((s) => ({ ...s, onboarded: true }))} />}</AnimatePresence>
       {settings && introOn && (settings.splashStyle || 'bifrost') !== 'none' && settings.onboarded !== false && ((settings.splashStyle || 'bifrost') === 'cinematic' ? <CouchSplash key="intro" /> : <Splash key="intro" style={settings.splashStyle || 'bifrost'} onDone={() => setIntroOn(false)} />)}
       <DesktopLaunch library={library} />
-      <AnimatePresence>{couch && <CouchMode key="couch" library={library} settings={settings} saveSettings={saveSettings} onClose={() => setCouch(false)} toast={toast} />}</AnimatePresence>
+      <AnimatePresence>{couch && <CouchMode key="couch" library={library} settings={settings} saveSettings={saveSettings} onClose={() => setCouch(false)} toast={toast} />}</AnimatePresence></Suspense>
     </div>
   );
 }

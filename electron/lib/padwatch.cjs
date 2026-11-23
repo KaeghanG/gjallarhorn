@@ -170,7 +170,8 @@ function start(combo, onCombo, onState, onGuide, onType, onBpm) {
   const mask = COMBOS[combo] ?? COMBOS['back+start'];
   const file = path.join(app.getPath('userData'), 'padwatch.ps1');
   try { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, SCRIPT); } catch { return; }
-  child = spawn('powershell', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', file, '-Mask', String(mask), '-TbFlag', tbFlagFile()], { windowsHide: true });
+  const me = spawn('powershell', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', file, '-Mask', String(mask), '-TbFlag', tbFlagFile()], { windowsHide: true });
+  child = me;
   let buf = '';
   child.stdout.on('data', (d) => {
     buf += d;
@@ -189,7 +190,7 @@ function start(combo, onCombo, onState, onGuide, onType, onBpm) {
   });
   child.on('error', () => {});
   child.on('exit', () => {
-    child = null;
+    if (child === me) { child = null; showTaskbar(false); } // the watcher died on its own (not via stop()): never leave the taskbar hidden
     if (onState) onState({ connected: false, buttons: 0, lx: 0, ly: 0 }); // never leave a stale "held" state behind
   });
 }

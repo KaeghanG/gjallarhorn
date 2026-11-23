@@ -15,6 +15,8 @@ export default function Overlay() {
   const [msg, setMsg] = useState('');
   const [confirm, setConfirm] = useState(false);
   const [now, setNow] = useState(new Date());
+  const layoutRef = useRef({});
+  useEffect(() => { if (open) window.gjallar.layoutCurrent().then((l) => { layoutRef.current = l || {}; }).catch(() => {}); }, [open]);
   const openedAt = useRef(0); // the Back+Start hold that opened the menu is still down: ignore buttons until it is released
   const [inv, setInv] = useState({ requests: [], games: [] }); // pending Steam friend requests + game invites
 
@@ -58,6 +60,7 @@ export default function Overlay() {
     { id: 'bri', icon: Sun, label: 'Brightness', value: qs?.brightness != null ? `${qs.brightness}%` : '—', hint: '◀ ▶ adjust', adj: (d) => adjust('bri', d), run: () => {} },
     { id: 'dnd', icon: BellOff, label: 'Do Not Disturb', value: qs?.dnd ? 'On' : 'Off', run: async () => { const on = await window.gjallar.qsDnd(!qs?.dnd); setQs((q) => ({ ...q, dnd: on })); } },
     { id: 'shot', icon: Camera, label: 'Take screenshot', run: () => act('screenshot') },
+    ...(noGame ? [] : [{ id: 'clip', icon: Camera, label: 'Start / stop clip recording (Game Bar)', run: () => act('clip') }]),
     ...(noGame ? [] : [{ id: 'quit', icon: X, label: 'Close game', danger: true, run: () => setConfirm(true) }]),
     { id: 'sleep', icon: Moon, label: 'Sleep PC', run: () => act('sleep') },
     { id: 'power', icon: PowerIcon, label: 'Restart / shut down…', run: () => act('page:power') },
@@ -79,7 +82,7 @@ export default function Overlay() {
     if (btn === 'a') list[i].run();
     if (btn === 'x') list[i].alt?.();
     if (btn === 'b' || btn === 'start') { confirm ? setConfirm(false) : act('resume'); }
-  });
+  }, { layout: () => layoutRef.current });
 
   return (
     <AnimatePresence>

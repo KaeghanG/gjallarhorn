@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Wrench, Check, Plus, ExternalLink, Search, Users } from 'lucide-react';
-import { Img } from '../components/ui.jsx';
+import { Img, PageHead } from '../components/ui.jsx';
 
 // Steam Workshop on the desktop: pick a game, browse/search, subscribe or unsubscribe.
 const SORTS = [['popular', 'Popular'], ['trending', 'Trending'], ['recent', 'Newest'], ['mine', 'Subscribed']];
@@ -45,7 +45,7 @@ export default function WorkshopPage({ library }) {
 
   return (
     <div className="page">
-      <h1 className="h-title"><Wrench size={26} style={{ verticalAlign: -4, marginRight: 10 }} />Workshop</h1>
+      <PageHead eyebrow="Steam" title="Workshop" sub="Browse and subscribe to mods and community content for your games." />
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', margin: '16px 0' }}>
         <select className="input" style={{ minWidth: 260 }} value={appid} onChange={(e) => setAppid(e.target.value)}>
           {games.map((g) => <option key={g.appid} value={g.appid}>{g.name}</option>)}

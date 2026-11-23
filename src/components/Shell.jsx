@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { House, Store, Library, Gift, Gamepad2, Settings, Search, Minus, Square, Copy, X, Heart, Joystick, Tv, HardDrive, Gamepad, Users, Wrench, Activity, Download } from 'lucide-react';
+import { House, Store, Library, Gift, Gamepad2, Settings, Search, Minus, Square, Copy, X, Heart, Joystick, Tv, HardDrive, Gamepad, Users, Wrench, Activity, Download, Camera } from 'lucide-react';
 
 // ---------- Animated night sky: stars + shooting stars on canvas, aurora in CSS ----------
 export function Sky({ reduceMotion }) {
@@ -20,7 +20,10 @@ export function Sky({ reduceMotion }) {
     };
     resize();
     addEventListener('resize', resize);
+    let tm;
     const draw = () => {
+      // Do not burn GPU on a background animation while a game (or anything else) has the focus.
+      if (!document.hasFocus()) { tm = setTimeout(() => { raf = requestAnimationFrame(draw); }, 400); return; }
       ctx.clearRect(0, 0, w, h);
       for (const s of stars) {
         s.a += s.s;
@@ -49,7 +52,7 @@ export function Sky({ reduceMotion }) {
       if (!reduceMotion) raf = requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); };
+    return () => { cancelAnimationFrame(raf); clearTimeout(tm); removeEventListener('resize', resize); };
   }, [reduceMotion]);
   return (
     <>
@@ -122,31 +125,45 @@ export const NAV = [
   { id: 'workshop', label: 'Workshop', icon: Wrench, rune: 'ᚦ' },
   { id: 'reports', label: 'Play reports', icon: Activity, rune: 'ᛏ' },
   { id: 'downloads', label: 'Downloads', icon: Download, rune: 'ᛞ' },
+  { id: 'screenshots', label: 'Shots & clips', icon: Camera, rune: 'ᛊ' },
   { id: 'friends', label: 'Friends', icon: Users, rune: 'ᛈ' },
   { id: 'wishlist', label: 'Wishlist', icon: Heart, rune: 'ᚹ' },
   { id: 'settings', label: 'Settings', icon: Settings, rune: 'ᛋ' },
   { id: 'couch', label: 'Couch mode', icon: Tv, rune: 'ᛉ' },
 ];
 
+const GROUPS = [
+  ['Play', ['home', 'library', 'store', 'wishlist']],
+  ['Captures', ['screenshots', 'reports']],
+  ['Social', ['friends', 'workshop']],
+  ['Manage', ['downloads', 'storage', 'bundles', 'emulators', 'retro', 'controllers']],
+];
 export function Sidebar({ page, setPage, counts = {} }) {
+  const byId = Object.fromEntries(NAV.map((n) => [n.id, n]));
+  let n = 0;
+  const item = (id) => {
+    const it = byId[id];
+    if (!it) return null;
+    const I = it.icon;
+    const active = page === it.id;
+    const idx = n++;
+    return (
+      <motion.button key={it.id} className={`nav-item ${active ? 'active' : ''}`} onClick={() => setPage(it.id)}
+        initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + idx * 0.02, type: 'spring', stiffness: 260, damping: 24 }}
+        whileTap={{ scale: 0.97 }}>
+        {active && <motion.div layoutId="nav-pill" className="nav-pill" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
+        <I size={18} />
+        <span>{it.label}</span>
+        {counts[it.id] ? <span className="nav-badge">{counts[it.id]}</span> : null}
+        <span className="rune">{it.rune}</span>
+      </motion.button>
+    );
+  };
   return (
     <nav className="sidebar">
-      <div className="nav-label">Bifröst</div>
-      {NAV.map((n, i) => {
-        const I = n.icon;
-        const active = page === n.id;
-        return (
-          <motion.button key={n.id} className={`nav-item ${active ? 'active' : ''}`} onClick={() => setPage(n.id)}
-            initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 + i * 0.05, type: 'spring', stiffness: 260, damping: 24 }}
-            whileTap={{ scale: 0.97 }}>
-            {active && <motion.div layoutId="nav-pill" className="nav-pill" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
-            <I size={18} />
-            <span>{n.label}</span>
-            {counts[n.id] ? <span className="nav-badge">{counts[n.id]}</span> : null}
-            <span className="rune">{n.rune}</span>
-          </motion.button>
-        );
-      })}
+      {GROUPS.map(([label, ids]) => (<React.Fragment key={label}><div className="nav-label">{label}</div>{ids.map(item)}</React.Fragment>))}
+      <div className="nav-label">System</div>
+      {['settings', 'couch'].map(item)}
       <div className="sidebar-foot">
         <div className="runes">ᚷᛃᚨᛚᛚᚨᚱᚺᛟᚱᚾ</div>
         <small>Heimdall's horn: one call, every realm of your games.</small>

@@ -88,21 +88,21 @@ export default function Screenshots({ items, onClose, bind }) {
 
       {viewing ? (
         <div className="couch-gallery-fullscreen">
-          <img src={items[selected]?.url} alt={items[selected]?.name || ''} />
+          {items[selected]?.video ? <video src={items[selected].url} controls autoPlay style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12 }} /> : <img src={items[selected]?.url} alt={items[selected]?.name || ''} />}
           <div className="couch-gallery-date">
             {items[selected]?.name}{items[selected]?.mtime && ` · ${new Date(items[selected].mtime).toLocaleString()}`}
           </div>
         </div>
       ) : null}
 
-      <div className="couch-gallery-header">Screenshots</div>
+      <div className="couch-gallery-header">Screenshots &amp; clips</div>
       {items.length === 0 ? (
-        <div className="couch-gallery-empty">No screenshots yet</div>
+        <div className="couch-gallery-empty">Nothing yet. Use the screenshot or clip item in the Back + Start menu</div>
       ) : (
         <div className="couch-gallery-grid" ref={gridRef}>
           {items.map((item, i) => (
             <div key={`${item.file || item.url}-${i}`} className={`couch-gallery-thumb ${i === selected ? 'on' : ''}`}>
-              <img src={item.url} alt={item.name || ''} loading="lazy" />
+              {item.video ? <video src={`${item.url}#t=1`} preload="metadata" muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <img src={item.url} alt={item.name || ''} loading="lazy" />}
             </div>
           ))}
         </div>

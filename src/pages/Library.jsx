@@ -5,6 +5,9 @@ import { PageHead, TiltCard, Img, Skeletons, Empty, stagger, rise, useToast } fr
 import Optimizer from '../components/Optimizer.jsx';
 import SavesPanel from '../components/SavesPanel.jsx';
 import LaunchOptions from '../components/LaunchOptions.jsx';
+import ProfileEditor from '../components/ProfileEditor.jsx';
+import LayoutEditor from '../components/LayoutEditor.jsx';
+import { SectionHead as ProfHead } from '../components/ui.jsx';
 import AchievementsPanel from '../components/AchievementsPanel.jsx';
 import NewsPanel from '../components/NewsPanel.jsx';
 import { gameInfo, TrailerVideo, GameBio } from '../components/Trailer.jsx';
@@ -231,6 +234,8 @@ function GameSheet({ game, onClose, onEdit, refreshLibrary, openReport, fav, isH
         </div>
         <div className="sheet-body one">
           <LaunchOptions game={game} engine={engine} />
+          <div style={{ marginBottom: 30 }}><ProfHead rune="ᛈ" title="Launch profiles" /><div className="panel"><ProfileEditor gameKey={game.key} /></div></div>
+          <div style={{ marginBottom: 30 }}><ProfHead rune="ᚷ" title="Controller layout" /><div className="panel"><LayoutEditor gameKey={game.key} /></div></div>
           <div style={{ height: 26 }} />
           <SavesPanel game={game} />
           {reports.length > 0 && (

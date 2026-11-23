@@ -11,9 +11,10 @@ const steamchat = require('./steamchat.cjs');
 
 const SORTS = { popular: 0, recent: 1, trending: 3, subscribed: 9 }; // EPublishedFileQueryType: RankedByVote=0, RankedByPublicationDate=1, RankedByTrend=3, RankedByTotalUniqueSubscriptions=9
 
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 function request(method, host, urlPath, { body, headers = {} } = {}) {
   return new Promise((resolve, reject) => {
-    const req = https.request({ method, host, path: urlPath, headers: { 'User-Agent': 'Gjallarhorn', ...headers } }, (res) => {
+    const req = https.request({ method, host, path: urlPath, headers: { 'User-Agent': UA, ...headers } }, (res) => {
       let s = '';
       res.setEncoding('utf8');
       res.on('data', (d) => (s += d));
@@ -100,12 +101,25 @@ async function setSubscribed(id, appid, on) {
   }
   const cookies = [...(ses.cookies || [])];
   if (!cookies.some((c) => /^sessionid=/i.test(c))) cookies.push(`sessionid=${ses.sessionId}`);
+  // 1) Steam Web API with the access token inside the steamLoginSecure cookie (what Steam's own site uses behind the scenes).
+  try {
+    const sl = cookies.map((c) => /^steamLoginSecure=(.+)$/i.exec(c)).find(Boolean);
+    const token = sl ? decodeURIComponent(sl[1]).split('||')[1] : null;
+    if (token) {
+      const b = `access_token=${encodeURIComponent(token)}&publishedfileid=${id}&appid=${encodeURIComponent(appid)}&list_type=1&notify_client=true`;
+      const ra = await request('POST', 'api.steampowered.com', `/IPublishedFileService/${on ? 'Subscribe' : 'Unsubscribe'}/v1/`, { body: b, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(b) } });
+      dbg(`api ${on ? 'subscribe' : 'unsubscribe'} ${id}: HTTP ${ra.status} ${ra.text.slice(0, 120)}`);
+      return { ok: true, via: 'web', note: on ? 'Subscribed. Steam downloads it the next time Steam checks (restart Steam if it does not appear).' : 'Unsubscribed.' };
+    }
+    dbg('no steamLoginSecure token in the web session; trying the website route');
+  } catch (e) { dbg('api route failed: ' + e.message + ' - trying the website route'); }
+  // 2) The community website route.
   const body = `id=${id}&appid=${encodeURIComponent(appid)}&sessionid=${encodeURIComponent(ses.sessionId)}`;
   let r;
   try {
     r = await request('POST', 'steamcommunity.com', on ? '/sharedfiles/subscribe' : '/sharedfiles/unsubscribe', {
       body,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), Cookie: cookies.join('; '), Referer: `https://steamcommunity.com/sharedfiles/filedetails/?id=${id}`, Origin: 'https://steamcommunity.com', Accept: 'application/json, text/javascript, */*; q=0.01', 'X-Requested-With': 'XMLHttpRequest' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), Cookie: cookies.map((c) => c.split(';')[0]).join('; '), Referer: `https://steamcommunity.com/sharedfiles/filedetails/?id=${id}`, Origin: 'https://steamcommunity.com', Accept: 'application/json, text/javascript, */*; q=0.01', 'X-Requested-With': 'XMLHttpRequest' },
     });
   } catch (e) {
     dbg('subscribe request failed: ' + e.message);

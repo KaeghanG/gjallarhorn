@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { PageHead } from '../components/ui.jsx';
 import { Users, Send, Check, X, Play, ExternalLink, Search, LogOut, MessageCircle } from 'lucide-react';
 
 // Desktop Steam friends: list, presence, chat, invites. Uses the same Steam chat session as couch mode.
@@ -54,7 +55,7 @@ export default function Friends() {
   if (st.status !== 'online') {
     return (
       <div className="page">
-        <h1 className="h-title"><Users size={26} style={{ verticalAlign: -4, marginRight: 10 }} />Friends</h1>
+        <PageHead eyebrow="Steam" title="Friends" sub="Chat with your Steam friends and join their games." />
         <div className="fp-connect">
           {st.status === 'qr' && st.qr ? (
             <><img src={st.qr} alt="Steam login QR code" className="fp-qr" /><p>Scan this with the Steam mobile app to sign in.<br /><span className="muted">Approve the request, and your friends appear here.</span></p></>

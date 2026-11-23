@@ -22,7 +22,10 @@ function useFire(ref, mode, accent, reduce) {
     const spawnEmber = () => {
       if (Math.random() < 0.5) parts.push({ x: Math.random() * w, y: h + 10, vx: (Math.random() - 0.3) * 1.5 * dpr, vy: -(0.6 + Math.random() * 2) * dpr, life: 1, decay: 0.002 + Math.random() * 0.004, r: (1 + Math.random() * 3) * dpr, ember: true });
     };
+    let tm;
     const draw = () => {
+      // Do not burn GPU on a background animation while a game (or anything else) has the focus.
+      if (!document.hasFocus()) { tm = setTimeout(() => { raf = requestAnimationFrame(draw); }, 400); return; }
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = mode === 'fire' ? 'rgba(6,2,2,0.34)' : 'rgba(4,5,10,0.22)';
       ctx.fillRect(0, 0, w, h);
@@ -47,7 +50,7 @@ function useFire(ref, mode, accent, reduce) {
       if (!reduce) raf = requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); };
+    return () => { cancelAnimationFrame(raf); clearTimeout(tm); removeEventListener('resize', resize); };
   }, [ref, mode, accent, reduce]);
 }
 

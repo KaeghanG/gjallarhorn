@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { PageHead } from '../components/ui.jsx';
+import GameCompare from '../components/GameCompare.jsx';
 import { Activity, Thermometer, Cpu, Gauge, MemoryStick } from 'lucide-react';
 
 // Desktop "Play reports": every tracked game session with GPU temperature, use, power and VRAM.
@@ -31,8 +33,7 @@ export default function Reports() {
   const s = cur?.summary || {};
   return (
     <div className="page">
-      <h1 className="h-title"><Activity size={26} style={{ verticalAlign: -4, marginRight: 10 }} />Play reports</h1>
-      <p className="muted" style={{ margin: '6px 0 18px' }}>Gjallarhorn records GPU temperature, use, power and video memory while a game it launched is running.</p>
+      <PageHead eyebrow="Your sessions" title="Play reports" sub="GPU temperature, use, power and video memory, recorded while a game launched from Gjallarhorn runs." />
       {list && !list.length && <div className="muted">No sessions recorded yet. Play something from Gjallarhorn.</div>}
       {list?.length > 0 && (
         <div className="rp-grid">
@@ -60,6 +61,7 @@ export default function Reports() {
           </div>
         </div>
       )}
+      {list && list.length > 0 && <GameCompare reports={list} />}
     </div>
   );
 }

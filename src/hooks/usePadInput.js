@@ -51,12 +51,13 @@ export function usePadInput(handler, opts = {}) {
         }
       }
       if (!b) { prev = {}; next = 0; return; }
-      const dir = b(12) || ay < -0.5 ? 'up' : b(13) || ay > 0.5 ? 'down' : b(14) || ax < -0.5 ? 'left' : b(15) || ax > 0.5 ? 'right' : null;
+      const L = o.current.layout?.() || {}, dz = L.deadzone || 0.5;
+      const dir = b(12) || ay < -dz ? 'up' : b(13) || ay > dz ? 'down' : b(14) || ax < -dz ? 'left' : b(15) || ax > dz ? 'right' : null;
       if (dir && t > next) { emit(dir); next = t + (prev.dir === dir ? 110 : 330); }
       if (!dir) next = 0;
       prev.dir = dir;
       for (const [i, name] of BUTTONS) {
-        if (b(i) && !prev[i]) emit(name);
+        if (b(i) && !prev[i]) emit(L.swapAB ? (name === 'a' ? 'b' : name === 'b' ? 'a' : name) : name);
         prev[i] = b(i);
       }
     };

@@ -14,6 +14,8 @@ Gjallarhorn scans your PC and shows every game in one place: **Steam** (every li
 
 - **Installed vs owned.** Games you own but have not installed appear in a *Not installed* row (alphabetical). Steam needs your free Web API key for this list; Epic's list comes from the Epic launcher's own cache, and **Fortnite is always offered**. Pressing **A** starts the install: Steam games open Gjallarhorn's install screen (pick a library folder; if Steam does not react within a few seconds it opens Steam's own install dialog), Epic games open the Epic launcher's install page.
 - **Launch options.** Each game can have its own launch arguments, with a curated list of performance flags to pick from.
+- **Launch profiles.** Save named sets of launch arguments per game (for example *Windowed* or *Low latency*) and pick the active one; it is added when you press Play. Desktop: Library, open the game, *Launch profiles*. Couch: Options, *Launch profile...*.
+- **Controller layout.** Per game, choose whether Back + Start opens Gjallarhorn's menu (turn it off for a game that uses both buttons), swap A and B in the menu, and tune stick sensitivity. These apply to Gjallarhorn's own menu; the game keeps full control of the controller, and true in-game button remapping is not offered.
 - **The right GPU, always.** On laptops with an integrated and a discrete GPU, Gjallarhorn sets Windows' *High performance* GPU preference for itself and for every game and emulator it launches.
 - **Updates.** Steam games with an update queued show an "Update queued" note and appear in the *Needs update* collection.
 
@@ -65,6 +67,7 @@ On the first tile of any row, press **Left** to slide out the Big-Picture-style 
 | **Volume / Brightness** | Left / Right adjust, A mutes (brightness works on laptop screens) |
 | **Do Not Disturb** | Toggles Windows notification suppression |
 | **Take screenshot** | Saves a screenshot without the menu in it |
+| **Start / stop clip recording** | Gives the game focus back and presses Windows Game Bar's record shortcut (Win + Alt + R); needs Xbox Game Bar enabled |
 | **Close game** | Asks the game to close; force-closes it after 6 seconds if it ignores you |
 | **Sleep PC**, **Restart / shut down...** | Power actions (restart and shut down ask for confirmation) |
 | Pending invites | Accept friend requests and join game invites |
@@ -137,9 +140,19 @@ PlayStation pads show an "unknown" battery because Windows does not expose it.
 
 ---
 
+## Screenshots and clips
+
+One shelf for everything you capture: screenshots from Steam and Gjallarhorn, and video clips from Windows Game Bar, NVIDIA Instant Replay / ShadowPlay and Steam recordings. Filter by screenshots, clips or game, open a capture in a viewer (clips play in the app), copy a screenshot to the clipboard, or show it in its folder.
+
+**How to open:** desktop sidebar → **Shots & clips**; couch sidebar → **Screenshots & clips**. Gjallarhorn does not record video itself; it lists what those tools save and can trigger Game Bar.
+
+---
+
 ## Play reports
 
 Every game you start from Gjallarhorn is tracked. When it closes you get a report with the session length and, on NVIDIA GPUs, **average and maximum temperature, average GPU use, average power and peak VRAM**, plus charts. Short sessions (a few minutes or less) have no charts.
+
+A **Compare games** table at the bottom of the desktop page lines up time played, GPU use, temperature, power and VRAM across your games.
 
 **How to open:** couch sidebar → **Play reports**; desktop sidebar → **Play reports**. Gjallarhorn also keeps playtime and can back up saves after a session.
 

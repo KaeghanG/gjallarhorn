@@ -2,12 +2,15 @@
 
 Ideas, roughly in the order they are likely to land. Nothing here is a promise; open an issue to vote or to propose something.
 
+## Shipped recently
+- Game launch profiles (named launch arguments per game, chosen on the desktop or from the couch Options menu)
+- Screenshots shelf on desktop and couch, with copy and show-in-folder
+- Per-game performance comparison table in Play reports
+- Video clips shelf with playback, and a per-game controller layout for Gjallarhorn's own menu
+
 ## Next
-- **Game profiles:** named launch setups per game (Normal, Performance, a fixed monitor) with a selector next to Play
-- **Per-game controller layouts:** deadzone, rumble and remaps that switch on at launch
-- **Screenshots and clips shelf** with easy sharing
+- **True button remapping** inside games (needs a virtual-controller driver, so it is opt-in work)
 - **Code-signed installer** and automatic updates
-- **Per-game performance comparison** across play reports
 
 ## Later
 - Game-night mode: pick friends and a game and send the invite

@@ -135,11 +135,7 @@ export default function SettingsPage({ settings, saveSettings, library }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
             <div><div style={{ fontWeight: 800 }}>Controller combo opens Couch mode from anywhere</div><div style={{ color: 'var(--muted)', fontSize: 12.5 }}>Hold the buttons ~1 second, even on the desktop or with Gjallarhorn in the tray. Xbox-style controllers directly; PlayStation/Switch while Steam is running.</div></div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <select className="input" value={settings.padCombo || 'back+start'} onChange={async (e) => { await saveSettings({ padCombo: e.target.value }); window.gjallar.setPadCombo({ padCombo: e.target.value }); }}>
-                <option value="back+start">View + Menu (Back + Start)</option>
-                <option value="lb+rb+start">LB + RB + Menu</option>
-                <option value="ls+rs">Click both sticks</option>
-              </select>
+              <span className="muted" style={{ fontSize: 12.5 }}>Back + Start</span>
               <Switch on={settings.globalPadCombo !== false} onChange={async (v) => { await saveSettings({ globalPadCombo: v }); window.gjallar.setPadCombo({ globalPadCombo: v }); }} />
             </div>
           </div>

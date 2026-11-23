@@ -146,7 +146,7 @@ export default function Downloads({ bind, onClose }) {
                     </div>
                     <div className="inst-free">
                       <div className="inst-bar" style={{ width: 100, marginBottom: 4 }}>
-                        <i style={{ width: `${it.percent != null ? Math.round(it.percent * 100) : 0}%` }} />
+                        <i style={it.percent != null ? { width: `${Math.round(it.percent * 100)}%` } : { width: '35%', animation: 'dlslide 1.4s ease-in-out infinite alternate' }} />
                       </div>
                       <small>{fmt(it.downloaded)} of {fmt(it.total)}</small>
                     </div>

@@ -34,22 +34,6 @@ import Splash from './couch/Splashes.jsx';
 
 const LOGO = (id) => `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${id}/logo.png`;
 
-// Standard gamepad mapping: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 8 Select, 9 Start, 12-15 D-pad.
-export function usePadCombo(onCombo) {
-  useEffect(() => {
-    let raf, since = 0;
-    const tick = () => {
-      const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
-      const held = document.hasFocus() && pads.some((p) => p.buttons[8]?.pressed && p.buttons[9]?.pressed);
-      if (held) { since ||= performance.now(); if (performance.now() - since > 700) { since = Infinity; onCombo(); } }
-      else since = 0;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [onCombo]);
-}
-
 // Tiny synthesized UI sounds (no audio files).
 let ctx;
 function blip(kind, on) {
@@ -359,7 +343,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
         action('power', 'Power menu', Power, () => setPowerOpen(true), 'Sleep, restart, shut down'),
         action('pads', 'Controllers', Gamepad2, () => setPadsOpen(true), 'Battery and button test'),
         action('downloads', 'Downloads', Download, () => setDlOpen(true), 'Queue, progress and speed'),
-        action('shots', 'Screenshots', Camera, () => window.gjallar.shotsList().then(setShotItems).catch((e) => toast({ kind: 'bad', title: "Couldn't load screenshots", body: e.message })), 'Steam and Gjallarhorn captures'),
+        action('shots', 'Screenshots & clips', Camera, () => Promise.all([window.gjallar.shotsList().catch(() => []), window.gjallar.clipsList().catch(() => [])]).then(([a, b]) => setShotItems([...a, ...b].sort((x, y) => y.mtime - x.mtime))).catch((e) => toast({ kind: 'bad', title: "Couldn't load screenshots", body: e.message })), 'Screenshots and video clips'),
         action('boost', settings?.boost?.priority === false ? 'Game Boost: off' : 'Game Boost: on', Zap, () => saveSettings({ boost: { ...(settings?.boost || {}), priority: settings?.boost?.priority === false, wallpaper: settings?.boost?.priority === false } }), 'High priority + pause wallpaper'),
         action('ingame', settings?.inGameMenu === false ? 'In-game menu: off' : 'In-game menu: on', Gamepad2, () => saveSettings({ inGameMenu: settings?.inGameMenu === false }), 'Hold the PS/Guide button in a game'),
         action('sound', sounds ? 'UI sounds: on' : 'UI sounds: off', sounds ? Volume2 : VolumeX, () => saveSettings({ couchSounds: !sounds }), 'Navigation blips'),
@@ -453,12 +437,34 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
     try { await window.gjallar.saveBackup(t.game); toast({ kind: 'ok', title: 'Saves backed up', body: t.title }); }
     catch (e) { toast({ kind: 'bad', title: 'Backup failed', body: e.message }); }
   };
+  const profileMenu = async (t) => {
+    try {
+      const d = await window.gjallar.profilesGet(t.game.key);
+      if (!d.profiles.length) return toast({ kind: 'ok', title: 'No launch profiles yet', body: 'Create them on the desktop: Library, open the game, Launch profiles.' });
+      const pick = async (id) => { await window.gjallar.profilesSet(t.game.key, { profiles: d.profiles, active: id }); toast({ kind: 'ok', title: 'Launch profile', body: id ? d.profiles.find((p) => p.id === id).name : 'Default' }); setMenu(null); };
+      setMenu({ title: 'Launch profile', i: Math.max(0, d.profiles.findIndex((p) => p.id === d.active) + 1), items: [{ label: `${!d.active ? '✓ ' : ''}Default`, icon: Play, run: () => pick(null) }, ...d.profiles.map((p) => ({ label: `${d.active === p.id ? '✓ ' : ''}${p.name}`, icon: Wrench, run: () => pick(p.id) }))] });
+    } catch (e) { toast({ kind: 'bad', title: 'Profiles', body: e.message }); }
+  };
+  const layoutMenu = async (t) => {
+    try {
+      const k = t.game.key;
+      const v = await window.gjallar.layoutGet(k);
+      const flip = async (patch) => { await window.gjallar.layoutSet(k, { ...v, ...patch }); layoutMenu(t); };
+      setMenu({ title: 'Controller layout', i: 0, items: [
+        { label: `Back + Start menu: ${v.menu ? 'On' : 'Off'}`, icon: Gamepad2, run: () => flip({ menu: !v.menu }) },
+        { label: `Swap A and B in the menu: ${v.swapAB ? 'On' : 'Off'}`, icon: Gamepad2, run: () => flip({ swapAB: !v.swapAB }) },
+        { label: `Stick sensitivity: ${v.deadzone <= 0.35 ? 'High' : v.deadzone >= 0.65 ? 'Low' : 'Normal'}`, icon: Gamepad2, run: () => flip({ deadzone: v.deadzone <= 0.35 ? 0.5 : v.deadzone >= 0.65 ? 0.3 : 0.7 }) },
+      ] });
+    } catch (e) { toast({ kind: 'bad', title: 'Layout', body: e.message }); }
+  };
   const optionsFor = (t) => {
     if (!t || (t.kind !== 'game' && t.kind !== 'rom')) return null;
     const items = [{ label: 'Play', icon: Play, run: () => activate(t) }];
     if (t.kind === 'game') items.push({ label: 'Game page', icon: Newspaper, run: () => setPage(t) });
     if (t.kind === 'game' && t.game?.source === 'steam' && t.appid) items.push({ label: 'Achievements', icon: Star, run: () => setAchGame(t) });
     if (t.kind === 'game' && t.game?.source === 'steam' && t.appid) items.push({ label: 'Workshop / mods', icon: Wrench, run: () => setWsGame(t) });
+    if (t.kind === 'game') items.push({ label: 'Launch profile…', icon: Wrench, run: () => profileMenu(t) });
+    if (t.kind === 'game') items.push({ label: 'Controller layout…', icon: Gamepad2, run: () => layoutMenu(t) });
     items.push({ label: favs.has(t.key) ? 'Remove from favorites' : 'Add to favorites', icon: Star, run: () => toggleFav(t) });
     items.push({ label: 'Add to shelf…', icon: Bookmark, run: () => setMenu(shelfMenu(t)) });
     if (t.kind === 'game') {
@@ -727,7 +733,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
         <span><b className="btn-glyph lb">L2/R2</b>A–Z</span>
         <span><b className="btn-glyph lb">LB/RB</b>Tabs</span>
         <div style={{ flex: 1 }} />
-        <span className="muted" style={{ fontWeight: 600 }}>{pad ? 'Controller connected' : 'Keyboard: arrows · Enter · Esc · Q/E tabs · F favorite · O options · Tab details · / search'}</span>
+        <span className="muted" style={{ fontWeight: 600 }}>{pad ? 'Controller connected' : 'Keyboard: arrows · Enter · Esc · Q/E · F · O'}</span>
       </div>
 
       <AnimatePresence>

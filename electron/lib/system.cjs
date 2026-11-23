@@ -13,6 +13,7 @@ const ps = (script, ms = 8000) => new Promise((resolve) => {
 });
 
 // ---------- Downloads: every Steam appmanifest that is not fully installed ----------
+const dirSize = (d) => { let t = 0; try { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) t += dirSize(p); else { try { t += fs.statSync(p).size; } catch {} } } } catch {} return t; };
 const lastSample = new Map(); // appid -> { t, bytes }
 function downloads() {
   const out = [];
@@ -25,15 +26,18 @@ function downloads() {
       try { m = library.parseVdf(fs.readFileSync(path.join(dir, f), 'utf8')).AppState; } catch { continue; }
       if (!m) continue;
       const flags = Number(m.StateFlags) || 0;
-      const total = Number(m.BytesToDownload) || 0, done = Number(m.BytesDownloaded) || 0;
-      if (flags === 4) continue; // fully installed and idle: nothing to show
+      const total = Number(m.BytesToDownload) || 0;
       const appid = String(m.appid || m.AppID);
+      const done = Math.min(total || Infinity, Number(m.BytesDownloaded) || 0);
+      if (flags === 4) continue; // fully installed and idle: nothing to show
       const prev = lastSample.get(appid), now = Date.now();
       let bytesPerSec = null;
       if (prev && now > prev.t && done >= prev.bytes) bytesPerSec = Math.round(((done - prev.bytes) / (now - prev.t)) * 1000);
-      lastSample.set(appid, { t: now, bytes: done });
-      const phase = flags === 4 ? 'done' : done > 0 && bytesPerSec ? 'downloading' : total > 0 && done < total ? (bytesPerSec === 0 ? 'paused' : 'downloading') : 'queued';
-      out.push({ appid, name: m.name || `App ${appid}`, phase, percent: total ? Math.min(1, done / total) : null, downloaded: done, total, bytesPerSec, library: lib.path });
+      if (!prev || done !== prev.bytes || now - prev.t > 20000) lastSample.set(appid, { t: now, bytes: done });
+      const stateFlagPaused = (flags & 512) !== 0;
+      const active = (flags & (256 | 1024 | 1048576 | 2097152 | 4194304)) !== 0;
+      const phase = stateFlagPaused ? 'paused' : bytesPerSec > 0 ? 'downloading' : active && done > 0 ? 'downloading' : active ? 'downloading' : 'queued';
+      out.push({ appid, name: m.name || `App ${appid}`, phase, percent: total && done > 0 ? Math.min(1, done / total) : null, downloaded: done, total, bytesPerSec, library: lib.path });
     }
   }
   return out;

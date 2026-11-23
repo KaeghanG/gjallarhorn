@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+**New**
+- Launch profiles: save named sets of launch arguments per game; the active one is added on Play (desktop: Library > game > Launch profiles; couch: Options > Launch profile)
+- Desktop Screenshots page with lightbox, per-game filter, copy and show in folder
+- Play reports: a Compare games table (time, GPU use, temperature, power, VRAM per game)
+- GitHub Actions workflow that builds the installer
+- Per-game controller layout for Gjallarhorn's own menu: turn the Back + Start menu off for one game, swap A and B, tune stick sensitivity (desktop: Library > game > Controller layout; couch: Options > Controller layout)
+- Video clips: the shelf now shows Game Bar, NVIDIA and Steam recordings with in-app playback, and the in-game menu can start / stop a Game Bar recording
+- Interface cleanup: grouped desktop sidebar (Play, Captures, Social, Manage, System), consistent page headers, tidier couch hint bar
+
+**Fixed**
+- Back + Start always opens the in-game menu (the controller shortcut is no longer user-selectable, so a stale setting cannot disable it) and the press is logged
+- Downloads: no more false "Paused" or dead progress bar; shows an animated bar when Steam has not reported progress
+- Workshop one-press subscribe now uses Steam's Web API first, with the website route as a fallback
+
+**Faster**
+- Pages, couch mode and dialogs load on demand: the main script shrank by about 40%
+- Background animations pause while another window (such as a game) has focus
+- GPU rasterisation enabled; the tray refresh no longer scans disks while a game runs
+
 ## 0.1.0 (first public release)
 
 **Couch mode**

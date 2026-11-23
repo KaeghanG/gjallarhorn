@@ -149,7 +149,9 @@ async function launchGame(game) {
   lastLaunchDisplayId = origin.displayId; // the in-game overlay opens on this monitor
   const target = wantSameScreen() ? origin : null;
   suspendPad(); // the game owns the controller now (couch mode only)
-  const args = (settings.load().launchArgs || {})[game.key];
+  const prof = settings.load().profiles?.[game.key];
+  const profArgs = prof?.active ? (prof.profiles || []).find((p) => p.id === prof.active)?.args || '' : '';
+  const args = [(settings.load().launchArgs || {})[game.key], profArgs].map((x) => String(x || '').trim()).filter(Boolean).join(' ');
   if (game.source === 'custom') {
     library.launchCustom(args != null && args !== '' ? { ...game, args } : game);
     const list = settings.load().customGames || [];
@@ -179,6 +181,25 @@ async function launchGame(game) {
   return true;
 }
 handle('game:launch', (game) => launchGame(game));
+// Launch profiles: named sets of launch arguments per game; the active one is appended on Play.
+handle('profiles:get', (key) => { const p = settings.load().profiles?.[key]; return { profiles: p?.profiles || [], active: p?.active || null }; });
+handle('profiles:set', (key, v) => {
+  const all = { ...(settings.load().profiles || {}) };
+  const profiles = (Array.isArray(v?.profiles) ? v.profiles : []).slice(0, 20).map((p) => ({ id: String(p.id), name: String(p.name || 'Profile').slice(0, 40), args: String(p.args || '').slice(0, 400) }));
+  if (profiles.length) all[key] = { profiles, active: profiles.some((p) => p.id === v.active) ? v.active : null }; else delete all[key];
+  settings.save({ profiles: all });
+  return true;
+});
+// Per-game controller layout for Gjallarhorn's own menu while that game runs: { menu: bool, swapAB: bool, deadzone: 0.2..0.8 }.
+const cleanLayout = (v) => ({ menu: v?.menu !== false, swapAB: !!v?.swapAB, deadzone: Math.min(0.8, Math.max(0.2, Number(v?.deadzone) || 0.5)) });
+handle('layout:get', (key) => cleanLayout(settings.load().layouts?.[key]));
+handle('layout:set', (key, v) => { const all = { ...(settings.load().layouts || {}) }; const c = cleanLayout(v); if (c.menu && !c.swapAB && c.deadzone === 0.5) delete all[key]; else all[key] = c; settings.save({ layouts: all }); return c; });
+handle('layout:current', () => { const k = session.status()?.key; return cleanLayout(k ? settings.load().layouts?.[k] : null); });
+const clips = require('./lib/clips.cjs');
+handle('clips:list', () => clips.list({ videosDir: app.getPath('videos'), steamRoot: library.steamRoot() }).map((c) => ({ ...c, url: shots.toFileUrl(c.file) })));
+handle('clips:record', async () => { const ok = await clips.toggleRecording(); if (!ok) throw new Error('Could not send the Game Bar shortcut'); return true; });
+handle('shots:reveal', (file) => { shell.showItemInFolder(String(file)); return true; });
+handle('shots:copy', (file) => { const { clipboard, nativeImage } = require('electron'); const img = nativeImage.createFromPath(String(file)); if (img.isEmpty()) throw new Error('Could not read the image'); clipboard.writeImage(img); return true; });
 handle('args:get', (key) => (settings.load().launchArgs || {})[key] || '');
 handle('args:set', (key, args) => {
   const all = { ...(settings.load().launchArgs || {}) };
@@ -265,6 +286,7 @@ function buildTray() {
     tray.setToolTip('Gjallarhorn');
     tray.on('click', showMain);
   }
+  if (tray && gameRunning) return; // never scan the disk while a game is running
   const pt = session.playtime();
   const recent = library.scanAll(settings.load().customGames)
     .map((g) => ({ g, t: Math.max(g.lastPlayed || 0, pt[g.key]?.last || 0) }))
@@ -401,14 +423,18 @@ function gatePad(state, send) {
   }
   send(base);
 }
+const dbgLog = (m) => { try { fs.appendFileSync(path.join(app.getPath('userData'), 'launch-debug.log'), `${new Date().toISOString()} [pad] ${m}
+`); } catch {} };
 function startPadWatch() {
   const s = settings.load();
   // The watcher always runs while couch mode is open (navigation), even if the global combo is switched off.
   // Keep the watcher running for: the global combo, couch-mode navigation, and the in-game menu (Guide/PS button).
   if (s.globalPadCombo === false && !couchActive && s.inGameMenu === false) return padwatch.stop();
-  padwatch.start(s.globalPadCombo === false ? 'none' : s.padCombo || 'back+start', () => {
+  padwatch.start(s.globalPadCombo === false ? 'none' : 'back+start', () => { // always Back+Start (Share+Options): a stale saved setting must never stop the menu opening
+    dbgLog('pad combo: Back+Start held');
     // The combo (Back+Start / Share+Options) is the Steam-proof twin of the Home tap: Steam grabs the Guide/PS button first.
     if (overlayOpen) return resumeGame();
+    { const k = session.status()?.key; if (k && settings.load().layouts?.[k]?.menu === false) { dbgLog('pad combo ignored: menu is turned off for this game'); return; } }
     if (couchActive && win?.isVisible() && win.isFocused() && !session.status()?.running) { padSuspended = false; return win.webContents.send('couch-home'); } // already in couch mode: jump to the Home menu
     if (settings.load().inGameMenu !== false && showOverlay()) return; // in a game, on the desktop or over an emulator: the menu
     bringCouch();
@@ -511,6 +537,12 @@ handle('overlay:action', async (action) => {
   if (action === 'couch') { bringCouch(); for (const ms of [500, 1100, 1800]) setTimeout(() => win?.webContents.send('couch-home'), ms); return true; }
   if (String(action).startsWith('page:')) { bringCouch(); const pg = String(action).slice(5); for (const ms of [600, 1300]) setTimeout(() => win?.webContents.send('couch-page', pg), ms); return true; }
   if (action === 'sleep') { hideOverlay(); require('child_process').execFile('rundll32.exe', ['powrprof.dll,SetSuspendState', '0,1,0'], { windowsHide: true }, () => {}); return true; }
+  if (action === 'clip') {
+    // Give the game focus back first, then press Win+Alt+R (Game Bar records the foreground game).
+    resumeGame();
+    await new Promise((r) => setTimeout(r, 1000));
+    return clips.toggleRecording();
+  }
   if (action === 'screenshot') {
     const id = overlayDisplay().id;
     overlayWin.hide(); // so the menu itself isn't in the picture
@@ -654,7 +686,7 @@ ipcMain.on('win:close', () => win?.close());
 // One instance only: launching again from Windows search just brings the window back.
 // Hybrid laptops: Windows' "GPU preference" is per executable. Set High performance for Gjallarhorn and for every game / emulator it launches,
 // so nothing silently lands on the integrated GPU. (HKCU, no admin needed; harmless on PCs with a single GPU.)
-try { app.commandLine.appendSwitch('force_high_performance_gpu'); } catch {}
+try { app.commandLine.appendSwitch('force_high_performance_gpu'); app.commandLine.appendSwitch('enable-gpu-rasterization'); app.commandLine.appendSwitch('enable-zero-copy'); app.commandLine.appendSwitch('ignore-gpu-blocklist'); } catch {}
 const gpuDone = new Set();
 function preferDiscreteGpu(exe) {
   try {
@@ -702,7 +734,7 @@ if (gotLock) app.whenReady().then(() => {
   setTimeout(() => steamchat.autoStart(), 4000); // quietly reconnect Steam chat if the user connected before
   startPadWatch();
   buildTray();
-  setInterval(buildTray, 5 * 60 * 1000);
+  setInterval(buildTray, 15 * 60 * 1000);
   setTimeout(backgroundEmuUpdates, 20000);
   setInterval(backgroundEmuUpdates, 6 * 60 * 60 * 1000);
 });
