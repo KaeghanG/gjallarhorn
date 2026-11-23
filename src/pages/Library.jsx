@@ -7,6 +7,7 @@ import SavesPanel from '../components/SavesPanel.jsx';
 import LaunchOptions from '../components/LaunchOptions.jsx';
 import ProfileEditor from '../components/ProfileEditor.jsx';
 import LayoutEditor from '../components/LayoutEditor.jsx';
+import PerfPanel from '../components/PerfPanel.jsx';
 import { SectionHead as ProfHead } from '../components/ui.jsx';
 import AchievementsPanel from '../components/AchievementsPanel.jsx';
 import NewsPanel from '../components/NewsPanel.jsx';
@@ -90,7 +91,7 @@ export default function Library({ library, refreshLibrary, openRoulette, openRep
       </div>
 
       {src === 'owned' ? (
-        <OwnedGrid owned={owned} q={q} onRefresh={() => { setOwned(null); window.gjallar.ownedList().then(setOwned, (e) => setOwned({ games: [], errors: [e.message] })); }} />
+        <OwnedGrid owned={owned} q={q} hidden={hidden} showHidden={showHidden} setShowHidden={setShowHidden} onToggleHide={(key) => toggleIn('hiddenGames', key)} onRefresh={() => { setOwned(null); window.gjallar.ownedList().then(setOwned, (e) => setOwned({ games: [], errors: [e.message] })); }} />
       ) : library.loading && !library.games.length ? (
         <Skeletons n={12} h={270} className="grid covers" />
       ) : !games.length ? (
@@ -143,16 +144,18 @@ export default function Library({ library, refreshLibrary, openRoulette, openRep
   );
 }
 
-function OwnedGrid({ owned, q, onRefresh }) {
+function OwnedGrid({ owned, q, hidden, showHidden, setShowHidden, onToggleHide, onRefresh }) {
   const toast = useToast();
   if (!owned) return <Skeletons n={12} h={270} className="grid covers" />;
-  const list = owned.games.filter((g) => g.name.toLowerCase().includes(q.toLowerCase()));
+  const hiddenHere = owned.games.filter((g) => hidden.has(g.key)).length;
+  const list = owned.games.filter((g) => g.name.toLowerCase().includes(q.toLowerCase()) && (showHidden || !hidden.has(g.key)));
   const install = async (g) => {
     try { await window.gjallar.installOwned(g); toast({ kind: 'ok', title: `Opening ${g.source === 'steam' ? 'Steam' : 'Epic'} installer`, body: `${g.name}: pick a drive and it downloads. Rescan when it's done.` }); }
     catch (e) { toast({ kind: 'bad', title: 'Install failed', body: e.message }); }
   };
   return (
     <>
+      {hiddenHere > 0 && <div style={{ marginBottom: 12 }}><button className={`chip ${showHidden ? 'on' : ''}`} onClick={() => setShowHidden(!showHidden)}><EyeOff size={13} />{hiddenHere} hidden</button></div>}
       {owned.errors.map((e) => <div key={e} className="warnbox" style={{ marginBottom: 14 }}><TriangleAlert size={16} style={{ flexShrink: 0 }} />{e}</div>)}
       {!list.length ? (
         <Empty rune="ᛟ" title={owned.errors.length ? 'Steam library not connected' : 'Everything you own is installed'}>
@@ -170,7 +173,7 @@ function OwnedGrid({ owned, q, onRefresh }) {
               <div className="overlay" style={{ opacity: 1, transform: 'none' }}>
                 <div className="title">{g.name}</div>
                 {g.playtimeMin > 0 && <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>{Math.round(g.playtimeMin / 60)} h on Steam</div>}
-                <button className="btn sm aurora" style={{ marginTop: 8 }}><CloudDownload size={13} />Install</button>
+                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}><button className="btn sm aurora"><CloudDownload size={13} />Install</button><button className="btn sm" title={hidden.has(g.key) ? 'Unhide' : 'Hide this game'} onClick={(e) => { e.stopPropagation(); onToggleHide(g.key); }}>{hidden.has(g.key) ? <Eye size={13} /> : <EyeOff size={13} />}</button></div>
               </div>
             </TiltCard>
           ))}
@@ -233,6 +236,7 @@ function GameSheet({ game, onClose, onEdit, refreshLibrary, openReport, fav, isH
           </div>
         </div>
         <div className="sheet-body one">
+          <div style={{ marginBottom: 30 }}><ProfHead rune="ᛏ" title="Performance" /><PerfPanel game={game} /></div>
           <LaunchOptions game={game} engine={engine} />
           <div style={{ marginBottom: 30 }}><ProfHead rune="ᛈ" title="Launch profiles" /><div className="panel"><ProfileEditor gameKey={game.key} /></div></div>
           <div style={{ marginBottom: 30 }}><ProfHead rune="ᚷ" title="Controller layout" /><div className="panel"><LayoutEditor gameKey={game.key} /></div></div>

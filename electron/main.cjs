@@ -192,6 +192,18 @@ handle('profiles:set', (key, v) => {
 });
 // Per-game controller layout for Gjallarhorn's own menu while that game runs: { menu: bool, swapAB: bool, deadzone: 0.2..0.8 }.
 const cleanLayout = (v) => ({ menu: v?.menu !== false, swapAB: !!v?.swapAB, deadzone: Math.min(0.8, Math.max(0.2, Number(v?.deadzone) || 0.5)) });
+const perf = require('./lib/perf.cjs');
+handle('perf:info', async () => ({ cpu: await perf.cpuInfo() }));
+handle('perf:get', async (game) => { const exe = game.exe || tweaks.detect(game).exe; return { performanceCores: !!settings.load().gamePerf?.[game.key]?.performanceCores, fso: await perf.fsoGet(exe), hasExe: !!exe }; });
+handle('perf:set', async (game, patch) => {
+  const all = { ...(settings.load().gamePerf || {}) };
+  const cur = { ...(all[game.key] || {}) };
+  if ('performanceCores' in patch) cur.performanceCores = !!patch.performanceCores;
+  if ('fso' in patch) await perf.fsoSet(game.exe || tweaks.detect(game).exe, !!patch.fso);
+  if (cur.performanceCores) all[game.key] = cur; else delete all[game.key];
+  settings.save({ gamePerf: all });
+  return true;
+});
 handle('layout:get', (key) => cleanLayout(settings.load().layouts?.[key]));
 handle('layout:set', (key, v) => { const all = { ...(settings.load().layouts || {}) }; const c = cleanLayout(v); if (c.menu && !c.swapAB && c.deadzone === 0.5) delete all[key]; else all[key] = c; settings.save({ layouts: all }); return c; });
 handle('layout:current', () => { const k = session.status()?.key; return cleanLayout(k ? settings.load().layouts?.[k] : null); });
@@ -311,6 +323,7 @@ function startSession(game, target) {
     target,
     boostPriority: s.boost?.priority !== false,
     pauseWallpaper: s.boost?.wallpaper !== false,
+    perf: { noThrottle: s.boost?.noThrottle !== false, performanceCores: !!s.gamePerf?.[game.key]?.performanceCores },
     autoBackup: !!s.autoBackup,
     wallpaperDir: we?.dir,
   }, {

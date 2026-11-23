@@ -3,7 +3,7 @@
 
 export const LAUNCH_ARGS = [
   // --- any engine ---
-  { arg: '-novid', label: 'Skip intro videos', desc: 'Skips intro cinematic sequences on startup.', engines: ['source'], kind: 'convenience', caution: null },
+  { arg: '-novid', label: 'Skip intro videos', desc: 'Skips intro cinematic sequences on startup (does nothing in Counter-Strike 2, which has no intro video).', engines: ['source'], kind: 'convenience', caution: null },
   { arg: '-fullscreen', label: 'Fullscreen', desc: 'Force exclusive fullscreen mode.', engines: ['any'], kind: 'quality', caution: null },
   { arg: '-windowed', label: 'Windowed', desc: 'Force windowed mode at startup.', engines: ['any'], kind: 'convenience', caution: null },
   { arg: '-dx11', label: 'DirectX 11', desc: 'Force DirectX 11 renderer.', engines: ['any'], kind: 'compat', caution: null },
@@ -31,6 +31,9 @@ export const LAUNCH_ARGS = [
   { arg: '-novr', label: 'Disable VR', desc: 'Skips loading VR support (Dota 2 and other Source 2 games).', engines: ['source'], kind: 'perf', caution: null },
   // --- more Unreal ---
   { arg: '-NoTextureStreaming', label: 'No texture streaming', desc: 'Loads full textures up front: removes texture pop-in but uses much more VRAM.', engines: ['unreal'], kind: 'quality', caution: 'Needs plenty of VRAM; can hurt on 6-8 GB cards.' },
+  { arg: '-NoVerifyGC', label: 'Skip GC verification', desc: 'Community-reported to reduce hitching on GPUs with 8 GB+ of VRAM in some UE5 games. Evidence: mixed.', engines: ['unreal'], kind: 'perf', caution: 'Disables a garbage-collection safety check; it can hide crashes.' },
+  { arg: '-norhithread', label: 'No RHI thread (DX11)', desc: 'Often suggested for Unreal games running DirectX 11 that stutter. Evidence: mixed.', engines: ['unreal'], kind: 'perf', caution: 'Only for DX11 games; can lower FPS on others.' },
+  { arg: '-nothreadtimeout', label: 'No thread timeout', desc: 'Stops the engine killing a slow render thread: prevents some crashes during shader compilation. Not an FPS gain.', engines: ['unreal'], kind: 'compat', caution: null },
   { arg: '-lowmemory', label: 'Low memory mode', desc: 'Tells the engine to use less RAM, for systems that are short on memory.', engines: ['unreal'], kind: 'perf', caution: 'Only helps low-RAM PCs; not every UE game honors it.' },
   { arg: '-onethread', label: 'Single thread (debug)', desc: 'Forces single-threaded rendering. Only for diagnosing crashes and hangs, it is slower.', engines: ['unreal'], kind: 'compat', caution: 'Large FPS loss; use only to troubleshoot.' },
   // --- more Unity ---

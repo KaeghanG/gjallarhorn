@@ -74,6 +74,7 @@ export default function SettingsPage({ settings, saveSettings, library }) {
           </div>
           {[
             ['priority', 'High CPU priority', 'Gives the game process High priority so background apps get out of its way.'],
+            ['noThrottle', 'Keep Windows from throttling the game', 'Opts the game out of Windows power throttling (Efficiency mode / EcoQoS), which can quietly slow a game on laptops and hybrid CPUs.'],
             ['wallpaper', 'Pause Wallpaper Engine', 'Stops your animated wallpaper from using the GPU while you play, then resumes it.'],
           ].map(([k, t, d]) => (
             <div key={k} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, padding: '10px 0', borderTop: '1px solid var(--line)' }}>

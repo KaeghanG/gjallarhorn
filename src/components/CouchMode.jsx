@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  House, Library, Joystick, Gamepad2, Tag, Settings2, Star, Play, Save, FolderOpen, Info, LogOut, Moon, RotateCw, Power,
+  House, EyeOff, Library, Joystick, Gamepad2, Tag, Settings2, Star, Play, Save, FolderOpen, Info, LogOut, Moon, RotateCw, Power,
   Zap, Volume2, VolumeX, X as XIcon, BatteryFull, BatteryMedium, BatteryLow, BatteryCharging, Clock, Gift, Monitor,
   Search, CloudDownload, Download, Users, Bookmark, KeyRound, Sun, BellOff, Wifi, ZoomIn, Contrast, Maximize, Timer, Newspaper, MessageCircle, ShoppingBag, Camera, Gauge,
 } from 'lucide-react';
@@ -298,7 +298,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
       const list = games.filter(passes).map(gameTile).sort(byName);
       r.push({ title: filter === 'all' ? 'All games · L2/R2 jump A–Z' : `${FILTERS.find((f) => f.id === filter)?.label} · L2/R2 jump A–Z`, icon: Library, items: list });
       if (filter === 'all') {
-        if (owned?.games?.length) r.push({ title: 'Not installed · press A to install', icon: CloudDownload, items: owned.games.slice(0, 400).map(ownedTile) });
+        if (owned?.games?.length) r.push({ title: 'Not installed · press A to install', icon: CloudDownload, items: owned.games.filter((g) => !(settings?.hiddenGames || []).includes(g.key)).slice(0, 400).map(ownedTile) });
         else if (owned?.errors?.length) r.push({ title: 'Not installed', icon: CloudDownload, items: [action('keyhelp', 'Connect Steam', KeyRound, () => toast({ kind: 'info', title: 'Add your Steam Web API key', body: 'Desktop app → Settings → Store accounts' }), owned.errors[0])] });
       }
     }
@@ -307,7 +307,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
       const match = (t) => words.every((w) => t.toLowerCase().includes(w));
       const resGames = words.length ? games.filter((g) => match(g.name)).map(gameTile).sort(byName) : [];
       const resRoms = words.length ? roms.filter((x) => match(x.title)).map(romTile).sort(byName) : [];
-      const resOwned = words.length ? (owned?.games || []).filter((g) => match(g.name)).slice(0, 40).map(ownedTile) : [];
+      const resOwned = words.length ? (owned?.games || []).filter((g) => match(g.name) && !(settings?.hiddenGames || []).includes(g.key)).slice(0, 40).map(ownedTile) : [];
       const total = resGames.length + resRoms.length + resOwned.length;
       const tag = { sub: 'Search', icon: Search, meta: [words.length ? `${total} result${total === 1 ? '' : 's'}` : 'Use the stick, or just type'] };
       KEYROWS.forEach((row, ri) => r.push({ title: ri === 0 ? `Search: ${query || '…'}` : '', icon: Search, keys: true, items: [...row].map((ch) => ({ key: 'k-' + ch, title: query || 'Type to search', kind: 'key', ch, ...tag })) }));
@@ -415,6 +415,11 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
     if (v == null) toast({ kind: 'info', title: 'Brightness', body: 'Only the laptop screen can be changed from here.' });
     else setQs((q) => ({ ...q, brightness: v }));
   }
+  const hideGame = (t) => {
+    const next = [...new Set([...(settings?.hiddenGames || []), t.key])];
+    saveSettings({ hiddenGames: next });
+    toast({ kind: 'ok', title: 'Game hidden', body: `${t.title} is hidden everywhere. Unhide it on the desktop: Library > hidden.` });
+  };
   const toggleFav = (t) => {
     const nextFavs = favs.has(t.key) ? [...favs].filter((k) => k !== t.key) : [...favs, t.key];
     saveSettings({ favorites: nextFavs });
@@ -459,6 +464,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
     } catch (e) { toast({ kind: 'bad', title: 'Layout', body: e.message }); }
   };
   const optionsFor = (t) => {
+    if (t?.kind === 'owned') return { title: t.title, i: 0, items: [{ label: 'Install', icon: Play, run: () => activate(t) }, { label: 'Hide this game', icon: EyeOff, run: () => hideGame(t) }] };
     if (!t || (t.kind !== 'game' && t.kind !== 'rom')) return null;
     const items = [{ label: 'Play', icon: Play, run: () => activate(t) }];
     if (t.kind === 'game') items.push({ label: 'Game page', icon: Newspaper, run: () => setPage(t) });
@@ -466,6 +472,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
     if (t.kind === 'game' && t.game?.source === 'steam' && t.appid) items.push({ label: 'Workshop / mods', icon: Wrench, run: () => setWsGame(t) });
     if (t.kind === 'game') items.push({ label: 'Launch profile…', icon: Wrench, run: () => profileMenu(t) });
     if (t.kind === 'game') items.push({ label: 'Controller layout…', icon: Gamepad2, run: () => layoutMenu(t) });
+    if (t.kind === 'game') items.push({ label: 'Hide this game', icon: EyeOff, run: () => hideGame(t) });
     items.push({ label: favs.has(t.key) ? 'Remove from favorites' : 'Add to favorites', icon: Star, run: () => toggleFav(t) });
     items.push({ label: 'Add to shelf…', icon: Bookmark, run: () => setMenu(shelfMenu(t)) });
     if (t.kind === 'game') {

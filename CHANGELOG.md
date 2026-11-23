@@ -13,6 +13,14 @@
 
 - Five more launch screens: Aurora, Embers, Warp, Glitch and Horn call (12 styles in all)
 
+- Hide games everywhere: hidden games disappear from Home, couch mode, search and the Not installed list (hide from the game page, a Not installed tile, or the couch Options menu; unhide from the Library's "hidden" chip)
+
+- Performance panel per game: prefer performance cores on hybrid Intel CPUs (soft CPU set), per-game fullscreen-optimizations flag, and evidence-tagged notes for specific games
+- Windows power throttling (EcoQoS) is switched off for games Gjallarhorn launches (Settings > Game Boost)
+- New docs/PERFORMANCE.md: what helps, what is placebo, with sources; new Unreal launch-arg chips (-NoVerifyGC, -norhithread, -nothreadtimeout)
+
+- New docs/COMPARISON.md: an honest comparison with Steam Big Picture, Playnite, GOG Galaxy, LaunchBox and Heroic
+
 **Fixed**
 - One launch screen instead of two: the couch-mode intro is skipped when the app-start splash just played, and the splash now covers the very first frame
 - Settings > Couch mode intro > Preview now shows over the whole window even when the page is scrolled

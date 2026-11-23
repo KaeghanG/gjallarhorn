@@ -78,8 +78,10 @@ More in the **[full feature guide](docs/FEATURES.md)**.
 ### Libraries and launching
 - **Every store, one library.** Steam (all library folders), Epic Games (classic *and* the newer per-user launcher), GOG, Ubisoft Connect, EA app, Battle.net, Riot, non-Steam shortcuts, custom `.exe` games and emulated games.
 - **Owned but not installed.** See what you own on Steam and Epic and install it from the app. Fortnite is always offered for Epic.
-- **Launch options that matter.** Per-game launch arguments with a curated list of performance flags.
+- **Launch options that matter.** Per-game launch arguments with a curated, evidence-tagged list of flags, plus **launch profiles** (named argument sets you switch between, on the desktop or from the couch Options menu).
+- **Hide games** you never want to see: they leave Home, couch mode, search and the Not installed list, and come back from the Library's *hidden* chip.
 - **Always the right GPU.** On hybrid laptops Gjallarhorn sets Windows' *High performance* GPU preference for itself and every game and emulator it launches, so nothing silently lands on the integrated chip.
+- **A performance panel per game.** Windows power-throttling opt-out for every launched game, an opt-in *prefer performance cores* for hybrid Intel CPUs (a soft scheduler hint, not hard pinning), a fullscreen-optimizations flag, and honest, evidence-tagged notes. We looked at what the community and vendors really document and left out the placebo: see [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 ### Couch mode (controller first)
 - **Cinematic home** with hero art, logos and trailer playback on hover.
@@ -88,10 +90,11 @@ More in the **[full feature guide](docs/FEATURES.md)**.
 - **Quick access, Controllers, Power, Downloads, Play reports, Friends** one slide-out sidebar away.
 - **Owns the screen.** Fullscreen, hides the Windows taskbar until you leave, closes Steam's own Big Picture window if it pops up, and returns to the front when your game closes.
 - **Animated launch screen** with game art, embers and a pulsing *Now playing* state.
+- **Per-game controller layout** for Gjallarhorn's own menu: turn the Back + Start menu off for one game, swap A and B, tune stick sensitivity.
 
 ### In-game menu: hold **Back + Start**
 Works anywhere a controller is plugged in: in a game, on the desktop, over an emulator.
-**Resume game** (brings it back to the front) · **Gjallarhorn home** · **Friends & chat** · **Downloads** · **Volume** · **Brightness** · **Do Not Disturb** · **Screenshot** · **Close game** (graceful, then forced after 6 s) · **Sleep** · **Restart / shut down** · pending friend requests and game invites.
+**Resume game** (brings it back to the front) · **Gjallarhorn home** · **Friends & chat** · **Downloads** · **Volume** · **Brightness** · **Do Not Disturb** · **Screenshot** · **Start / stop clip recording** (Windows Game Bar) · **Close game** (graceful, then forced after 6 s) · **Sleep** · **Restart / shut down** · pending friend requests and game invites.
 
 ### Social
 - **Friends & chat** on Steam's chat protocol: online / in-game list, presence with the real game name, messages with an on-screen keyboard, friend requests, one-press join-game. Sign in once with a QR code from the Steam mobile app. **Chat history is saved locally.**
@@ -107,13 +110,15 @@ Works anywhere a controller is plugged in: in a game, on the desktop, over an em
 
 ### Insight
 - **Play reports:** GPU temperature, utilisation, power draw and peak VRAM, sampled during every session you start from Gjallarhorn, with charts.
+- **Screenshots and clips shelf** on desktop and couch: Steam and Gjallarhorn screenshots plus Game Bar, NVIDIA and Steam video clips, with in-app playback, copy and show-in-folder.
+- **Compare games:** a table of time played, GPU use, temperature, power and VRAM across your games.
 - **Automatic save backups**, playtime tracking, and an optional *AI / Gaming* switch that unloads local Ollama models from VRAM while you play.
 
 ### Make it yours
 - **Animated backgrounds:** Aurora & stars, **Fire**, Rising embers, your own image / GIF / MP4 / WebM, or a colour gradient.
 - **Themes:** four realms, **12 one-click presets**, custom accent colour, background dimming and glass blur.
 - **Fonts:** 12 text fonts and 14 heading fonts, plus text size from Small to Extra large, applied across the whole app.
-- **Intro splash screens** for desktop start and couch mode: **Bifröst**, **Forge**, **Runes**, **Boot terminal**, **Minimal**, the original **Cinematic**, or none, with a live preview.
+- **12 launch screens**, one shared between app start and couch mode so you only ever see one: **Bifröst**, **Forge**, **Runes**, **Boot terminal**, **Minimal**, **Aurora**, **Embers**, **Warp**, **Glitch**, **Horn call**, the original **Cinematic**, or none, with a live preview.
 
 ### Desktop extras
 Price comparison across stores, free games, wishlist with price-drop alerts, bundles, storage manager, OptiScaler helper, per-game tweaks with backup/restore, a global quick launcher (Ctrl + Shift + Space), command palette, game roulette and a tray icon.
@@ -130,7 +135,9 @@ Price comparison across stores, free games, wishlist with price-drop alerts, bun
 
 ---
 
-## Gjallarhorn vs. Steam Big Picture
+## How it compares
+
+A full, honest comparison against Steam Big Picture, Playnite, GOG Galaxy, LaunchBox and Heroic (including where they are ahead) is in [docs/COMPARISON.md](docs/COMPARISON.md). The short version against Steam Big Picture:
 
 | | Steam Big Picture | Gjallarhorn |
 |---|---|---|
@@ -140,7 +147,9 @@ Price comparison across stores, free games, wishlist with price-drop alerts, bun
 | Menu over a running game | Guide button (Steam overlay) | **Hold Back + Start, also over emulators and the desktop** |
 | Steam friends and chat | Yes | Yes (on-screen keyboard, saved history) |
 | Steam Workshop | Via Steam | Browse and subscribe in-app |
-| Themes, fonts, animated backgrounds, splash screens | Limited | **12 presets, fire/embers/video backgrounds, 26 fonts, 5 intros** |
+| Themes, fonts, animated backgrounds, launch screens | Limited | **12 presets, fire/embers/video backgrounds, 26 fonts, 12 launch screens** |
+| Per-game launch profiles, hide games, clips shelf | Launch options only | **Yes** |
+| Per-game performance panel | No | **Yes** |
 | Play reports with GPU charts | No | **Yes** |
 | Hides the Windows taskbar | Yes | Yes |
 | Open source | No | **Yes (MIT)** |
@@ -158,6 +167,9 @@ Gjallarhorn is a front end and needs the stores it launches games through; it do
 | [Controls](docs/CONTROLS.md) | Every button on every screen, keyboard shortcuts |
 | [Emulators](docs/EMULATORS.md) | Supported systems, emulators, cover art |
 | [Settings reference](docs/SETTINGS.md) | Every setting and its stored key |
+
+| [How it compares](docs/COMPARISON.md) | Gjallarhorn vs Steam Big Picture, Playnite, GOG Galaxy, LaunchBox and Heroic, including where they win |
+| [Performance guide](docs/PERFORMANCE.md) | What really helps FPS and stutter, what is placebo, with sources |
 | [FAQ](docs/FAQ.md) | Safety, stores, controllers, privacy |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Symptom-by-symptom fixes |
 | [Architecture](docs/ARCHITECTURE.md) | Code map for contributors |

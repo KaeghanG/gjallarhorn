@@ -150,12 +150,14 @@ function Inner() {
   }), [toast, refreshLibrary]);
   useEffect(() => { window.__gjNav = (p) => { setDetail(null); setPage(p); }; window.__gjOpen = openGame; }, [openGame]);
   const goSearch = (q) => { setQuery(q); setPage('store'); };
-  const ctx = { openGame, settings, saveSettings, library, refreshLibrary, setPage, goSearch, openRoulette: () => setRoulette(true), openReport: setReport };
+  const hiddenKeys = new Set(settings?.hiddenGames || []);
+  const visLib = hiddenKeys.size ? { ...library, games: library.games.filter((g) => !hiddenKeys.has(g.key)) } : library; // hidden games stay out of Home, couch mode and search
+  const ctx = { openGame, settings, saveSettings, library: visLib, refreshLibrary, setPage, goSearch, openRoulette: () => setRoulette(true), openReport: setReport };
 
   const pages = {
     home: <Home {...ctx} />,
     store: <StorePage {...ctx} query={query} setQuery={setQuery} />,
-    library: <Library {...ctx} />,
+    library: <Library {...ctx} library={library} />,
     storage: <Storage {...ctx} />,
     bundles: <Suspense fallback={null}><Bundles /></Suspense>,
     emulators: <Emulators {...ctx} />,
@@ -176,7 +178,7 @@ function Inner() {
       <ThemeBackground settings={settings} />
       <div className="shell">
         <TitleBar onSearch={goSearch} />
-        <Sidebar page={page} setPage={navTo} counts={{ library: library.games.length || null, wishlist: settings?.wishlist?.length || null }} />
+        <Sidebar page={page} setPage={navTo} counts={{ library: visLib.games.length || null, wishlist: settings?.wishlist?.length || null }} />
         <main className="main">
           <AnimatePresence mode="wait">
             <motion.div key={page + region} className="page" {...pageAnim}>
@@ -187,14 +189,14 @@ function Inner() {
       </div>
       <Suspense fallback={null}>
       <AnimatePresence>{detail && <GameDetail key="detail" game={detail} onClose={() => setDetail(null)} {...ctx} />}</AnimatePresence>
-      <CommandPalette open={palette} onClose={() => setPalette(false)} games={library.games} onNavigate={navTo} onOpenStore={(g) => { setPalette(false); openGame(g); }} onSearchStore={goSearch} />
+      <CommandPalette open={palette} onClose={() => setPalette(false)} games={visLib.games} onNavigate={navTo} onOpenStore={(g) => { setPalette(false); openGame(g); }} onSearchStore={goSearch} />
       <AnimatePresence>{roulette && <Roulette key="roulette" library={library} onClose={() => setRoulette(false)} />}</AnimatePresence>
       <AnimatePresence>{report && <SessionReport key="report" report={report} onClose={() => setReport(null)} />}</AnimatePresence>
       <ChatInvites />
       <AnimatePresence>{settings && !settings.onboarded && !couch && <Welcome key="welcome" settings={settings} saveSettings={saveSettings} onDone={() => setSettings((s) => ({ ...s, onboarded: true }))} />}</AnimatePresence>
       {introOn && introStyle !== 'none' && (!settings || settings.onboarded !== false) && (introStyle === 'cinematic' ? <CouchSplash key="intro" /> : <Splash key="intro" style={introStyle} onDone={() => setIntroOn(false)} />)}
       <DesktopLaunch library={library} />
-      <AnimatePresence>{couch && <CouchMode key="couch" library={library} settings={settings} saveSettings={saveSettings} onClose={() => setCouch(false)} toast={toast} />}</AnimatePresence></Suspense>
+      <AnimatePresence>{couch && <CouchMode key="couch" library={visLib} settings={settings} saveSettings={saveSettings} onClose={() => setCouch(false)} toast={toast} />}</AnimatePresence></Suspense>
     </div>
   );
 }

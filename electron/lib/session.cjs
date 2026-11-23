@@ -222,6 +222,9 @@ function start(game, exe, opts, hooks) {
       await ps(`try { (Get-Process -Id ${s.pid}).PriorityClass = 'High' } catch {}`);
       s.actions.push('High CPU priority');
     }
+    if (opts.perf && (opts.perf.noThrottle || opts.perf.performanceCores)) {
+      try { const acts = await require('./perf.cjs').tune(s.pid, opts.perf); acts.forEach((a) => s.actions.push(a)); dbg(`"${game.name}": tuning -> ${acts.join(' | ') || 'nothing applied'}`); } catch (e) { dbg(`tuning failed: ${e.message}`); }
+    }
     const we = opts.pauseWallpaper ? wallpaperExe([opts.wallpaperDir].filter(Boolean)) : null;
     if (we && (await processes()).some((x) => x.name === 'wallpaper64.exe' || x.name === 'wallpaper32.exe')) {
       execFile(we, ['-control', 'pause'], { windowsHide: true }, () => {});
