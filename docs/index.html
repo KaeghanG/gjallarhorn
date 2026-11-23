@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gjallarhorn: one launcher for every game, built for the couch</title>
+<meta name="description" content="A free, open-source Windows game launcher with a Big-Picture-style couch mode. Steam, Epic, GOG, Ubisoft, EA, Battle.net and emulators in one controller-first front end." />
+<meta property="og:title" content="Gjallarhorn" />
+<meta property="og:description" content="One launcher for every game. Built for the couch." />
+<meta property="og:image" content="screenshots/couch-library.jpg" />
+<style>
+:root { --bg:#05060d; --ink:#eef1ff; --muted:#9aa4c8; --gold:#f0c869; --gold2:#ffe2a0; --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.1); }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin:0; background: var(--bg); color: var(--ink); font: 16px/1.6 "Segoe UI", system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+a { color: var(--gold); text-decoration: none; } a:hover { color: var(--gold2); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
+.wrap { width: min(1160px, 100% - 40px); margin-inline: auto; }
+.skip { position: absolute; left: -999px; } .skip:focus { left: 12px; top: 12px; background: var(--gold); color: #111; padding: 8px 14px; border-radius: 8px; z-index: 99; }
+.glow { position: fixed; inset: 0; z-index: -1; background: radial-gradient(60% 50% at 15% 0%, rgba(92,156,255,.22), transparent 70%), radial-gradient(50% 45% at 90% 10%, rgba(192,107,255,.18), transparent 70%), radial-gradient(60% 50% at 50% 110%, rgba(255,122,47,.2), transparent 70%); }
+header { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); background: rgba(5,6,13,.72); border-bottom: 1px solid var(--line); }
+.bar { display:flex; align-items:center; justify-content:space-between; height: 64px; }
+.brand { display:flex; align-items:center; gap:12px; font-weight: 800; letter-spacing: .24em; color: var(--ink); } .brand img { width: 34px; height: 34px; }
+nav { display:flex; gap: 22px; } nav a { color: var(--muted); font-weight: 600; font-size: 14px; } nav a:hover { color: var(--ink); }
+.btn { display:inline-flex; align-items:center; gap:10px; padding: 14px 26px; border-radius: 14px; font-weight: 800; color:#1a1405; background: linear-gradient(135deg, var(--gold2), var(--gold) 55%, #d9a23f); box-shadow: 0 10px 40px -10px rgba(240,200,105,.6); transition: transform .2s, box-shadow .2s; }
+.btn:hover { transform: translateY(-2px); color:#1a1405; box-shadow: 0 16px 50px -8px rgba(240,200,105,.8); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); box-shadow: none; } .btn.ghost:hover { color: var(--ink); border-color: var(--gold); }
+.hero { text-align:center; padding: 88px 0 40px; }
+.hero img.logo { width: 112px; height: 112px; filter: drop-shadow(0 0 30px rgba(240,200,105,.5)); animation: float 5s ease-in-out infinite; }
+@keyframes float { 50% { transform: translateY(-8px); } }
+h1 { margin: 18px 0 6px; font-size: clamp(44px, 9vw, 108px); letter-spacing: .14em; line-height: 1; font-weight: 900; background: linear-gradient(100deg,#fff 20%,var(--gold) 50%,#fff 80%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 6s linear infinite; }
+@keyframes shine { to { background-position: -200% 0; } }
+.tag { font-size: clamp(18px, 2.6vw, 28px); color: var(--muted); margin: 0 0 30px; }
+.cta { display:flex; gap: 14px; justify-content:center; flex-wrap: wrap; }
+.shot { margin: 56px auto 0; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 40px 120px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(240,200,105,.12); }
+.shot img, .shot video { display:block; width:100%; height:auto; }
+section { padding: 84px 0 8px; }
+.eyebrow { color: var(--gold); letter-spacing: .3em; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+h2 { margin: 8px 0 12px; font-size: clamp(28px, 4.4vw, 46px); line-height: 1.1; }
+.lead { color: var(--muted); max-width: 70ch; font-size: 18px; }
+.grid { display:grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 32px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; transition: transform .25s, border-color .25s; }
+.card:hover { transform: translateY(-4px); border-color: rgba(240,200,105,.5); }
+.card h3 { margin: 0 0 6px; font-size: 18px; } .card p { margin: 0; color: var(--muted); font-size: 15px; }
+.ico { font-size: 26px; margin-bottom: 10px; }
+.gallery { display:grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: 32px; }
+figure { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+figure img { display:block; width:100%; height:auto; transition: transform .6s; } figure:hover img { transform: scale(1.03); }
+figcaption { padding: 12px 16px; color: var(--muted); font-size: 14px; } figcaption b { color: var(--ink); }
+.splashes { display:grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-top: 28px; }
+table { width:100%; border-collapse: collapse; margin-top: 26px; background: var(--card); border-radius: 16px; overflow:hidden; border: 1px solid var(--line); }
+th, td { text-align:left; padding: 12px 18px; border-bottom: 1px solid var(--line); } th { color: var(--gold); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; } tr:last-child td { border-bottom: 0; }
+kbd { background: rgba(255,255,255,.1); border: 1px solid var(--line); border-radius: 8px; padding: 2px 9px; font: 700 13px monospace; }
+.story { background: linear-gradient(135deg, rgba(255,122,47,.12), rgba(92,156,255,.1)); border: 1px solid var(--line); border-radius: 24px; padding: 34px; margin-top: 30px; }
+.steps { counter-reset: s; display:grid; gap: 14px; margin-top: 26px; padding: 0; list-style: none; }
+.steps li { counter-increment: s; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px 18px 66px; position: relative; }
+.steps li::before { content: counter(s); position:absolute; left: 18px; top: 14px; width: 34px; height: 34px; border-radius: 50%; display:grid; place-items:center; font-weight: 900; color:#1a1405; background: var(--gold); }
+code { background: rgba(255,255,255,.08); padding: 2px 8px; border-radius: 6px; font-size: 14px; }
+footer { margin-top: 90px; padding: 36px 0 60px; border-top: 1px solid var(--line); color: var(--muted); text-align:center; font-size: 14px; }
+.note { font-size: 13px; color: var(--muted); margin-top: 18px; }
+@media (max-width: 720px) { nav { display:none; } .hero { padding-top: 56px; } .story { padding: 22px; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<div class="glow" aria-hidden="true"></div>
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top"><img src="icon.png" alt="" />GJALLARHORN</a>
+    <nav aria-label="Main">
+      <a href="#features">Features</a><a href="#gallery">Gallery</a><a href="#custom">Customise</a><a href="#controller">Controller</a><a href="#install">Install</a>
+    </nav>
+    <a class="btn" style="padding:9px 18px" href="https://github.com/KaeghanG/gjallarhorn/releases/latest">Download</a>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap hero" id="top">
+  <img class="logo" src="icon.png" alt="Gjallarhorn war-horn logo" />
+  <h1>GJALLARHORN</h1>
+  <p class="tag">One launcher for every game. Built for the couch.</p>
+  <div class="cta">
+    <a class="btn" href="https://github.com/KaeghanG/gjallarhorn/releases/latest">Download for Windows</a>
+    <a class="btn ghost" href="https://github.com/KaeghanG/gjallarhorn">View on GitHub</a>
+  </div>
+  <div class="shot"><video src="trailer.mp4" poster="screenshots/couch-library.jpg" controls muted playsinline preload="metadata"></video></div>
+  <p class="note">Free and open source (MIT). Windows 10 / 11. Not affiliated with Bungie, Valve, Epic Games or any store.</p>
+</div>
+
+<section id="features"><div class="wrap">
+  <div class="eyebrow">Everything in one place</div>
+  <h2>Your games. Your controller. Your rules.</h2>
+  <p class="lead">Gjallarhorn gives Steam, Epic, GOG, Ubisoft, EA, Battle.net, Riot and your emulators a single, beautiful front end, with a full-screen couch mode that feels like Big Picture and then goes much further.</p>
+  <div class="grid">
+    <div class="card"><div class="ico">🎮</div><h3>Couch mode</h3><p>Full-screen, controller-first UI with trailers, big tiles, an on-screen keyboard and a Big-Picture-style sidebar.</p></div>
+    <div class="card"><div class="ico">📚</div><h3>Every store, one library</h3><p>Steam, Epic (old and new launcher), GOG, Ubisoft, EA, Battle.net, Riot, shortcuts, custom games and emulated games.</p></div>
+    <div class="card"><div class="ico">🕹️</div><h3>Hold Back + Start</h3><p>An in-game menu on any screen: resume, home, friends, volume, brightness, screenshot, close game, power.</p></div>
+    <div class="card"><div class="ico">💬</div><h3>Friends and chat</h3><p>Steam chat with an on-screen keyboard, presence with real game names, invites, and saved history.</p></div>
+    <div class="card"><div class="ico">🛠️</div><h3>Steam Workshop</h3><p>Browse, search and subscribe to Workshop items from the couch or the desktop.</p></div>
+    <div class="card"><div class="ico">📈</div><h3>Play reports</h3><p>GPU temperature, use, power and VRAM charts for every session you launch.</p></div>
+    <div class="card"><div class="ico">🏆</div><h3>Achievements</h3><p>Steam progress for any game, straight from your public profile. No API key needed.</p></div>
+    <div class="card"><div class="ico">🧩</div><h3>Emulators and covers</h3><p>Eden, Dolphin, PCSX2, RPCS3, Cemu and more, with box art that finds itself. Never ships ROMs or BIOS.</p></div>
+    <div class="card"><div class="ico">⚡</div><h3>Right GPU, always</h3><p>Sets the high-performance GPU for itself and every game it launches on hybrid laptops.</p></div>
+  </div>
+</div></section>
+
+<section id="gallery"><div class="wrap">
+  <div class="eyebrow">Gallery</div>
+  <h2>See it in action</h2>
+  <div class="gallery">
+    <figure><img loading="lazy" src="screenshots/couch-library.jpg" alt="Couch mode library with a cinematic hero and shelves" /><figcaption><b>Library.</b> Cinematic hero, shelves, A-Z jumping.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/couch-sidebar.jpg" alt="Slide-out Big-Picture-style sidebar" /><figcaption><b>Sidebar.</b> Press Left on the first tile.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/couch-store.jpg" alt="Couch mode store with deals" /><figcaption><b>Store and deals.</b> Specials and top sellers.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/couch-emulators.jpg" alt="Emulators tab with Eden, RPCS3, Dolphin" /><figcaption><b>Emulators.</b> Detected automatically.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/desktop-workshop.jpg" alt="Steam Workshop browser" /><figcaption><b>Workshop.</b> Browse and subscribe.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/couch-reports.jpg" alt="Play reports with charts" /><figcaption><b>Play reports.</b> Temperature, power, VRAM.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/desktop-library.jpg" alt="Desktop library grid" /><figcaption><b>Desktop library.</b> Covers from every store.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/couch-quick-access.jpg" alt="Quick access page with battery, Wi-Fi and system stats" /><figcaption><b>Quick access.</b> Battery, Wi-Fi, volume, CPU/GPU/RAM.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="custom"><div class="wrap">
+  <div class="eyebrow">Make it fire</div>
+  <h2>Endlessly customisable</h2>
+  <p class="lead">Twelve one-click presets, live animated backgrounds (fire, embers, aurora, or your own video), accent colours, 26 fonts and selectable intro screens.</p>
+  <div class="gallery">
+    <figure><img loading="lazy" src="screenshots/theme-fire.jpg" alt="Fire animated background" /><figcaption><b>Fire.</b> A live flame background.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/theme-neon.jpg" alt="Neon theme" /><figcaption><b>Neon.</b> One click.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/theme-terminal.jpg" alt="Terminal green theme with monospace fonts" /><figcaption><b>Terminal.</b> Monospace everything.</figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/desktop-settings-themes.jpg" alt="Theme settings" /><figcaption><b>Settings.</b> Presets, backgrounds, fonts.</figcaption></figure>
+  </div>
+  <h2 style="margin-top:54px;font-size:28px">Choose your intro</h2>
+  <div class="splashes">
+    <figure><img loading="lazy" src="screenshots/splash-bifrost.jpg" alt="Bifröst splash" /><figcaption><b>Bifröst</b></figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/splash-forge.jpg" alt="Forge splash" /><figcaption><b>Forge</b></figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/splash-runes.jpg" alt="Runes splash" /><figcaption><b>Runes</b></figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/splash-terminal.jpg" alt="Boot terminal splash" /><figcaption><b>Boot terminal</b></figcaption></figure>
+    <figure><img loading="lazy" src="screenshots/splash-minimal.jpg" alt="Minimal splash" /><figcaption><b>Minimal</b></figcaption></figure>
+  </div>
+</div></section>
+
+<section id="controller"><div class="wrap">
+  <div class="eyebrow">Controller</div>
+  <h2>Works with Xbox and PlayStation pads</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>A</kbd></td><td>Select / play</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Back / exit</td></tr>
+      <tr><td><kbd>X</kbd></td><td>Favourite</td></tr>
+      <tr><td><kbd>Y</kbd></td><td>Options menu (achievements, Workshop, launch options)</td></tr>
+      <tr><td><kbd>LB</kbd> / <kbd>RB</kbd></td><td>Previous / next tab</td></tr>
+      <tr><td><kbd>L2</kbd> / <kbd>R2</kbd></td><td>Jump A to Z</td></tr>
+      <tr><td><kbd>Left</kbd> on the first tile</td><td>Open the sidebar</td></tr>
+      <tr><td><kbd>Back</kbd> + <kbd>Start</kbd> (hold)</td><td>Open the menu anywhere: in a game, on the desktop, over an emulator</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<section id="story"><div class="wrap">
+  <div class="story">
+    <div class="eyebrow">The name</div>
+    <h2>Why "Gjallarhorn"?</h2>
+    <p class="lead">In Norse myth the Gjallarhorn is Heimdall's horn, the call that rings across all nine realms at Ragnarök. In Destiny it became the legendary rocket launcher everyone remembers. The author loved <em>the best launcher named Gjallarhorn</em> so much that they set out to build a <strong>fire launcher</strong> with the same name, one that calls every game you own with a single blast.</p>
+    <p class="note">An independent fan project. No Bungie assets are used; the war-horn logo is an original drawing.</p>
+  </div>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <div class="eyebrow">Get started</div>
+  <h2>Install in a minute</h2>
+  <ol class="steps">
+    <li><strong>Download</strong> the installer from the <a href="https://github.com/KaeghanG/gjallarhorn/releases/latest">latest release</a> and run it. Windows may show a SmartScreen warning because the installer is not code-signed yet: choose <em>More info, then Run anyway</em>.</li>
+    <li><strong>Open Gjallarhorn.</strong> It finds your installed games automatically. Plug in a controller and choose <em>Couch mode</em> in the sidebar.</li>
+    <li><strong>Optional:</strong> paste a free <a href="https://steamcommunity.com/dev/apikey">Steam Web API key</a> in <em>Settings, Store accounts</em> to unlock owned-games and the Workshop browser.</li>
+  </ol>
+  <p class="note">Build from source: <code>npm install</code> then <code>npm run dev</code>. Everything stays on your PC: no account, no telemetry. Gjallarhorn never downloads ROMs, BIOS files, firmware or keys.</p>
+</div></section>
+</main>
+
+<footer><div class="wrap">Gjallarhorn is free software under the <a href="https://github.com/KaeghanG/gjallarhorn/blob/main/LICENSE">MIT License</a>. <a href="https://github.com/KaeghanG/gjallarhorn">Source on GitHub</a>. <strong>Sound the horn.</strong></div></footer>
+</body>
+</html>

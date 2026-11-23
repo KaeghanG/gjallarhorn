@@ -1,0 +1,50 @@
+/* ==========================================================================
+   Gjallarhorn: theme realms
+   Applied via <html data-realm="...">  (asgard = gold / default in styles.css)
+   Each realm overrides --gold, --gold-hi, --gold-deep, aurora vars, --glow-gold.
+   ========================================================================== */
+
+/* ---------- Niflheim — icy / frost (ice blue #8fd8ff / #d6f3ff / #3b8fc4) ---------- */
+:root[data-realm="niflheim"] {
+  --gold: #8fd8ff;
+  --gold-hi: #d6f3ff;
+  --gold-deep: #3b8fc4;
+  --aur-green: rgba(0, 230, 230, 1);    /* cyan   — replaces aurora green */
+  --aur-teal: #22c3e6;                   /* keep teal */
+  --aur-blue: rgba(255, 255, 255, 1);    /* white  — replaces aurora blue */
+  --aur-violet: rgba(160, 140, 255, 1); /* periwinkle — replaces aurora violet */
+  --glow-gold: 0 0 0 1px rgba(143, 216, 255, .35), 0 10px 40px -8px rgba(143, 216, 255, .45);
+}
+[data-realm="niflheim"] .aurora-sky .a1 { background: radial-gradient(closest-side, rgba(0, 230, 230, .55), transparent); }
+[data-realm="niflheim"] .aurora-sky .a2 { background: radial-gradient(closest-side, rgba(255, 255, 255, .55), transparent); }
+[data-realm="niflheim"] .aurora-sky .a3 { background: radial-gradient(closest-side, rgba(160, 140, 255, .5), transparent); }
+
+/* ---------- Muspelheim — fire / ember (orange #ff9a3c / #ffd29a / #b4451c) ---------- */
+:root[data-realm="muspelheim"] {
+  --gold: #ff9a3c;
+  --gold-hi: #ffd29a;
+  --gold-deep: #b4451c;
+  --aur-green: rgba(255, 60, 30, 1);    /* red-orange  — replaces aurora green */
+  --aur-teal: rgba(255, 170, 30, 1);    /* amber       — replaces aurora teal */
+  --aur-blue: #ff6bc8;                   /* keep pink   (doubles as magenta) */
+  --aur-violet: rgba(255, 80, 130, 1);  /* magenta     — replaces aurora violet */
+  --glow-gold: 0 0 0 1px rgba(255, 154, 60, .35), 0 10px 40px -8px rgba(255, 154, 60, .45);
+}
+[data-realm="muspelheim"] .aurora-sky .a1 { background: radial-gradient(closest-side, rgba(255, 60, 30, .55), transparent); }
+[data-realm="muspelheim"] .aurora-sky .a2 { background: radial-gradient(closest-side, rgba(255, 170, 30, .55), transparent); }
+[data-realm="muspelheim"] .aurora-sky .a3 { background: radial-gradient(closest-side, rgba(255, 80, 130, .5), transparent); }
+
+/* ---------- Vanaheim — nature / verdant (emerald #5fe0a0 / #c8ffe2 / #1f8a5a) ---------- */
+:root[data-realm="vanaheim"] {
+  --gold: #5fe0a0;
+  --gold-hi: #c8ffe2;
+  --gold-deep: #1f8a5a;
+  --aur-green: rgba(80, 240, 100, 1);   /* green     — replaces aurora green */
+  --aur-teal: rgba(30, 200, 160, 1);    /* teal      — replaces aurora teal (kept greener) */
+  --aur-blue: rgba(180, 255, 80, 1);    /* lime      — replaces aurora blue */
+  --aur-violet: rgba(100, 200, 255, 1); /* sky       — replaces aurora violet */
+  --glow-gold: 0 0 0 1px rgba(95, 224, 160, .35), 0 10px 40px -8px rgba(95, 224, 160, .45);
+}
+[data-realm="vanaheim"] .aurora-sky .a1 { background: radial-gradient(closest-side, rgba(80, 240, 100, .55), transparent); }
+[data-realm="vanaheim"] .aurora-sky .a2 { background: radial-gradient(closest-side, rgba(180, 255, 80, .55), transparent); }
+[data-realm="vanaheim"] .aurora-sky .a3 { background: radial-gradient(closest-side, rgba(100, 200, 255, .5), transparent); }
