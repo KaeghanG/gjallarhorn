@@ -202,6 +202,9 @@ Pick the intro that plays when the app starts and when you enter couch mode (**S
 ![Boot terminal splash](screenshots/splash-terminal.jpg)
 ![Minimal splash](screenshots/splash-minimal.jpg)
 
+
+Five more styles: **Aurora** (northern lights), **Embers** (rising sparks), **Warp** (hyperspace), **Glitch** (neon scanlines) and **Horn call** (shockwave rings). Only one launch screen plays: if the app-start splash just ran, entering couch mode skips a second one.
+
 ---
 
 ## Desktop extras

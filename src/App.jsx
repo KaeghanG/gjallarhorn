@@ -45,7 +45,11 @@ function Inner() {
   const [query, setQuery] = useState('');
   const [detail, setDetail] = useState(null); // { steamAppID?, gameID?, title?, thumb? }
   const [settings, setSettings] = useState(null);
+  // The splash must cover the very first paint, before settings arrive from the main process: remember the chosen style locally.
+  const cachedStyle = (() => { try { return localStorage.getItem('gj.splashStyle'); } catch { return null; } })();
   const [introOn, setIntroOn] = useState(() => !new URLSearchParams(location.search).has('overlay') && !new URLSearchParams(location.search).has('quick')); // app-start intro (not for the in-game menu / quick launcher windows)
+  const introStyle = settings ? (settings.splashStyle || 'bifrost') : (cachedStyle || 'bifrost');
+  useEffect(() => { if (settings) { try { localStorage.setItem('gj.splashStyle', settings.splashStyle || 'bifrost'); } catch {} } }, [settings?.splashStyle]); // eslint-disable-line
   const [library, setLibrary] = useState({ loading: true, games: [] });
   const checked = useRef(false);
 
@@ -188,7 +192,7 @@ function Inner() {
       <AnimatePresence>{report && <SessionReport key="report" report={report} onClose={() => setReport(null)} />}</AnimatePresence>
       <ChatInvites />
       <AnimatePresence>{settings && !settings.onboarded && !couch && <Welcome key="welcome" settings={settings} saveSettings={saveSettings} onDone={() => setSettings((s) => ({ ...s, onboarded: true }))} />}</AnimatePresence>
-      {settings && introOn && (settings.splashStyle || 'bifrost') !== 'none' && settings.onboarded !== false && ((settings.splashStyle || 'bifrost') === 'cinematic' ? <CouchSplash key="intro" /> : <Splash key="intro" style={settings.splashStyle || 'bifrost'} onDone={() => setIntroOn(false)} />)}
+      {introOn && introStyle !== 'none' && (!settings || settings.onboarded !== false) && (introStyle === 'cinematic' ? <CouchSplash key="intro" /> : <Splash key="intro" style={introStyle} onDone={() => setIntroOn(false)} />)}
       <DesktopLaunch library={library} />
       <AnimatePresence>{couch && <CouchMode key="couch" library={library} settings={settings} saveSettings={saveSettings} onClose={() => setCouch(false)} toast={toast} />}</AnimatePresence></Suspense>
     </div>

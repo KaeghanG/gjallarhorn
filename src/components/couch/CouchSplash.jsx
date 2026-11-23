@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { splashState } from './Splashes.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HornLogo } from '../Shell.jsx';
 
@@ -44,6 +45,7 @@ function Embers() {
 export default function CouchSplash() {
   const [show, setShow] = useState(true);
   useEffect(() => {
+    splashState.last = Date.now();
     const t = setTimeout(() => setShow(false), SHOW_MS);
     const skip = () => setShow(false);
     const k = setTimeout(() => { addEventListener('keydown', skip); addEventListener('pointerdown', skip); }, 700);

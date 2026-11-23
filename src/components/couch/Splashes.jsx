@@ -9,6 +9,11 @@ export const SPLASH_STYLES = [
   { id: 'runes', label: 'Runes', blurb: 'Falling runes resolve into the title' },
   { id: 'terminal', label: 'Boot terminal', blurb: 'Retro BIOS boot sequence' },
   { id: 'minimal', label: 'Minimal', blurb: 'Clean horn, thin line, soft fade' },
+  { id: 'aurora', label: 'Aurora', blurb: 'Northern lights ripple, then the name glows in' },
+  { id: 'embers', label: 'Embers', blurb: 'Fire sparks rise and the title ignites' },
+  { id: 'warp', label: 'Warp', blurb: 'Hyperspace streaks resolve into the horn' },
+  { id: 'glitch', label: 'Glitch', blurb: 'Neon signal lock with scanlines' },
+  { id: 'horn', label: 'Horn call', blurb: 'Shockwave rings spread from the horn, like a call across the realms' },
   { id: 'cinematic', label: 'Cinematic (classic)', blurb: 'The original letterbox intro' },
   { id: 'none', label: 'None', blurb: 'Go straight in' },
 ];
@@ -142,10 +147,74 @@ function Minimal() {
   );
 }
 
-const VIEWS = { bifrost: Bifrost, forge: Forge, runes: Runes, terminal: Terminal, minimal: Minimal };
-const DURATION = { bifrost: 4600, forge: 4200, runes: 4600, terminal: 4400, minimal: 3200 };
+// ---------- 6-10. Aurora, Embers, Warp, Glitch, Horn call (CSS driven) ----------
+function Aurora() {
+  return (
+    <div className="sp sp-aur">
+      <i className="sp-ribbon r1" /><i className="sp-ribbon r2" /><i className="sp-ribbon r3" />
+      <div className="sp-center">
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 1 }}><HornLogo size={78} /></motion.div>
+        <motion.h1 className="sp-title sp-aurtitle" initial={{ opacity: 0, filter: 'blur(14px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 1.3, duration: 1.6 }}>{NAME}</motion.h1>
+      </div>
+    </div>
+  );
+}
+function Embers() {
+  const sparks = useMemo(() => Array.from({ length: 70 }, (_, i) => ({ i, x: Math.random() * 100, s: 2 + Math.random() * 5, d: Math.random() * 3.2, t: 2.4 + Math.random() * 2.4, dx: (Math.random() - 0.5) * 120 })), []);
+  return (
+    <div className="sp sp-emb">
+      {sparks.map((p) => <i key={p.i} className="sp-spark" style={{ left: `${p.x}%`, width: p.s, height: p.s, animationDelay: `${p.d}s`, animationDuration: `${p.t}s`, '--dx': `${p.dx}px` }} />)}
+      <div className="sp-center">
+        <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.6, duration: 0.9 }}><HornLogo size={84} /></motion.div>
+        <motion.h1 className="sp-title sp-molten" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 1.2 }}>{NAME}</motion.h1>
+      </div>
+    </div>
+  );
+}
+function Warp() {
+  const lines = useMemo(() => Array.from({ length: 110 }, (_, i) => ({ i, a: Math.random() * 360, d: Math.random() * 1.6, l: 18 + Math.random() * 40 })), []);
+  return (
+    <div className="sp sp-warp">
+      <div className="sp-warpfield">{lines.map((l) => <i key={l.i} style={{ '--a': `${l.a}deg`, animationDelay: `${l.d}s`, '--len': `${l.l}vmax` }} />)}</div>
+      <div className="sp-center">
+        <motion.div initial={{ scale: 3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1.6, duration: 0.9, ease: 'easeOut' }}><HornLogo size={90} /></motion.div>
+        <motion.h1 className="sp-title sp-cyan" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2, duration: 0.8 }}>{NAME}</motion.h1>
+      </div>
+    </div>
+  );
+}
+function Glitch() {
+  return (
+    <div className="sp sp-glit">
+      <div className="sp-scan" />
+      <div className="sp-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0.2, 1] }} transition={{ delay: 0.4, duration: 0.7 }}><HornLogo size={76} /></motion.div>
+        <h1 className="sp-title sp-glitchtitle" data-t={NAME}>{NAME}</h1>
+        <motion.p className="sp-sub" initial={{ opacity: 0 }} animate={{ opacity: 0.85 }} transition={{ delay: 2 }}>signal locked</motion.p>
+      </div>
+    </div>
+  );
+}
+function HornCall() {
+  return (
+    <div className="sp sp-hc">
+      {[0, 1, 2, 3, 4].map((i) => <i key={i} className="sp-wave" style={{ animationDelay: `${0.5 + i * 0.35}s` }} />)}
+      <div className="sp-center">
+        <motion.div initial={{ scale: 0.4, opacity: 0, rotate: -12 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ delay: 0.2, type: 'spring', stiffness: 140, damping: 11 }}><HornLogo size={100} /></motion.div>
+        <motion.h1 className="sp-title" initial={{ opacity: 0, letterSpacing: '1em' }} animate={{ opacity: 1, letterSpacing: '0.3em' }} transition={{ delay: 1.4, duration: 1.3, ease: 'easeOut' }}>{NAME}</motion.h1>
+        <motion.p className="sp-sub" initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} transition={{ delay: 2.6 }}>One call, every realm</motion.p>
+      </div>
+    </div>
+  );
+}
 
+const VIEWS = { bifrost: Bifrost, forge: Forge, runes: Runes, terminal: Terminal, minimal: Minimal, aurora: Aurora, embers: Embers, warp: Warp, glitch: Glitch, horn: HornCall };
+const DURATION = { bifrost: 4600, forge: 4200, runes: 4600, terminal: 4400, minimal: 3200, aurora: 4600, embers: 4400, warp: 4200, glitch: 3800, horn: 4400 };
+
+// When a splash last started playing: the couch-mode intro is skipped if the app-start one just played (one launch screen, not two).
+export const splashState = { last: 0 };
 export default function Splash({ style = 'bifrost', onDone }) {
+  useEffect(() => { splashState.last = Date.now(); }, []);
   const View = VIEWS[style];
   const [show, setShow] = useState(!!View);
   useEffect(() => {

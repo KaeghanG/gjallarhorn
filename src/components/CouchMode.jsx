@@ -30,7 +30,7 @@ import ActivityFeed from './couch/ActivityFeed.jsx';
 import PowerMenu from './couch/PowerMenu.jsx';
 import { buildCollections } from '../lib/collections.js';
 import CouchSplash from './couch/CouchSplash.jsx';
-import Splash from './couch/Splashes.jsx';
+import Splash, { splashState } from './couch/Splashes.jsx';
 
 const LOGO = (id) => `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${id}/logo.png`;
 
@@ -128,6 +128,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
   const [tab, setTab] = useState(0);
   const [pos, setPos] = useState({ r: 0, c: 0 });
   const [zone, setZone] = useState('rows'); // 'tabs' | 'rows'
+  const skipIntro = useRef(Date.now() - splashState.last < 45000); // the app-start splash just played: do not play a second one
   const [menu, setMenu] = useState(null); // { title, items: [{label, icon, run}], i }
   const [page, setPage] = useState(null); // game tile whose full page is open
   const [friendsOpen, setFriendsOpen] = useState(false); // Steam friends / chat / invites screen
@@ -719,7 +720,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
         {!rows.length && <div className="couch-row active"><h2>Nothing here yet</h2><p className="muted">{tabId === 'retro' ? 'Add ROM folders on the Retro page.' : 'Loading…'}</p></div>}
       </div>
 
-      {(settings?.splashStyle || 'bifrost') === 'cinematic' ? <CouchSplash /> : <Splash style={settings?.splashStyle || 'bifrost'} />}
+      {!skipIntro.current && ((settings?.splashStyle || 'bifrost') === 'cinematic' ? <CouchSplash /> : <Splash style={settings?.splashStyle || 'bifrost'} />)}
 
       <AnimatePresence>{hud && <motion.div className="couch-hud" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.2 }}>{hud}</motion.div>}</AnimatePresence>
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { BODY_FONTS, HEAD_FONTS } from '../data/fonts.js';
 import { THEME_PRESETS } from '../data/themePresets.js';
 import CouchSplash from '../components/couch/CouchSplash.jsx';
@@ -230,7 +231,7 @@ export default function SettingsPage({ settings, saveSettings, library }) {
           <div><button className="btn sm" onClick={() => { const st = settings.splashStyle || 'bifrost'; setPreview(st); if (st === 'cinematic' || st === 'none') setTimeout(() => setPreview(null), 4800); }}>Preview</button></div>
         </div>
       </div>
-      {preview === 'cinematic' ? <CouchSplash key="pv" /> : preview && <Splash key={preview} style={preview} onDone={() => setPreview(null)} />}
+      {createPortal(preview === 'cinematic' ? <CouchSplash key="pv" /> : preview ? <Splash key={preview} style={preview} onDone={() => setPreview(null)} /> : null, document.body)}
 
       <div className="section">
         <SectionHead rune="ᛞ" title="Theme & background" />

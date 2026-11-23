@@ -11,7 +11,11 @@
 - Video clips: the shelf now shows Game Bar, NVIDIA and Steam recordings with in-app playback, and the in-game menu can start / stop a Game Bar recording
 - Interface cleanup: grouped desktop sidebar (Play, Captures, Social, Manage, System), consistent page headers, tidier couch hint bar
 
+- Five more launch screens: Aurora, Embers, Warp, Glitch and Horn call (12 styles in all)
+
 **Fixed**
+- One launch screen instead of two: the couch-mode intro is skipped when the app-start splash just played, and the splash now covers the very first frame
+- Settings > Couch mode intro > Preview now shows over the whole window even when the page is scrolled
 - Back + Start always opens the in-game menu (the controller shortcut is no longer user-selectable, so a stale setting cannot disable it) and the press is logged
 - Downloads: no more false "Paused" or dead progress bar; shows an animated bar when Steam has not reported progress
 - Workshop one-press subscribe now uses Steam's Web API first, with the website route as a fallback

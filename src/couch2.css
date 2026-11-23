@@ -282,3 +282,31 @@
 .sp-scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 2px, transparent 2px 4px); pointer-events: none; }
 /* minimal */
 .sp-min { background: #05060c; } .sp-line { height: 2px; background: linear-gradient(90deg, transparent, #f0c869, transparent); } .sp-thin { font-weight: 300; font-size: clamp(28px, 4.4vw, 64px); text-shadow: none; }
+
+/* ---- more splash styles ---- */
+.sp-aur { background: radial-gradient(120% 100% at 50% 100%, #07142a, #03050c 65%); }
+.sp-ribbon { position: absolute; left: -10%; width: 120%; height: 38%; filter: blur(46px); mix-blend-mode: screen; opacity: .6; border-radius: 50%; animation: sp-rib 6s ease-in-out infinite alternate; }
+.sp-ribbon.r1 { top: 8%; background: linear-gradient(90deg, transparent, #2cf0b0 35%, #3cb8ff 70%, transparent); }
+.sp-ribbon.r2 { top: 28%; background: linear-gradient(90deg, transparent, #7a5cff 40%, #ff4fd8 75%, transparent); animation-delay: -2s; opacity: .45; }
+.sp-ribbon.r3 { top: 48%; background: linear-gradient(90deg, transparent, #f0c869 50%, transparent); animation-delay: -4s; opacity: .22; }
+@keyframes sp-rib { from { transform: translateX(-6%) rotate(-5deg) scaleY(.9); } to { transform: translateX(6%) rotate(4deg) scaleY(1.15); } }
+.sp-aurtitle { color: #e9fff6; text-shadow: 0 0 28px #2cf0b0, 0 0 70px rgba(60,184,255,.55); letter-spacing: .3em; }
+.sp-emb { background: radial-gradient(90% 70% at 50% 110%, #4a1604, #070302 70%); }
+.sp-spark { position: absolute; bottom: -12px; border-radius: 50%; background: #ffb347; box-shadow: 0 0 10px 2px #ff7a2f; opacity: 0; animation: sp-rise linear infinite; }
+@keyframes sp-rise { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translate(var(--dx), -105vh); opacity: 0; } }
+.sp-warp { background: #02030a; }
+.sp-warpfield { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.sp-warpfield i { position: absolute; left: 0; top: 0; width: 22vmax; height: 2px; transform-origin: 0 50%; background: linear-gradient(90deg, rgba(180,220,255,0), #cfe8ff); opacity: 0; animation: sp-streak 1.5s ease-in infinite; }
+@keyframes sp-streak { 0% { opacity: 0; transform: rotate(var(--a)) translateX(2vmax) scaleX(.2); } 25% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateX(75vmax) scaleX(1.4); } }
+.sp-glit { background: #05010c; }
+.sp-scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 4px); animation: sp-scrl 3s linear infinite; }
+@keyframes sp-scrl { to { background-position: 0 40px; } }
+.sp-glitchtitle { position: relative; color: #fff; letter-spacing: .3em; text-shadow: 2px 0 #ff2bd6, -2px 0 #1ff0ff; animation: sp-glt 1.1s steps(1) 3 .6s both; }
+.sp-glitchtitle::before, .sp-glitchtitle::after { content: attr(data-t); position: absolute; inset: 0; opacity: .7; }
+.sp-glitchtitle::before { color: #1ff0ff; transform: translate(-4px, 0); clip-path: inset(10% 0 55% 0); animation: sp-glc 1.1s steps(2) 3 .6s; }
+.sp-glitchtitle::after { color: #ff2bd6; transform: translate(4px, 0); clip-path: inset(60% 0 8% 0); animation: sp-glc 0.9s steps(2) 3 .7s reverse; }
+@keyframes sp-glt { 0%,100% { transform: none; } 20% { transform: translate(-6px, 2px) skewX(6deg); } 40% { transform: translate(5px, -2px); } 60% { transform: translate(-3px, 1px) skewX(-8deg); } }
+@keyframes sp-glc { 0% { clip-path: inset(5% 0 70% 0); } 50% { clip-path: inset(50% 0 20% 0); } 100% { clip-path: inset(80% 0 2% 0); } }
+.sp-hc { background: radial-gradient(70% 70% at 50% 50%, #14102c, #04050c 70%); }
+.sp-wave { position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px; border-radius: 50%; border: 2px solid rgba(240,200,105,.8); box-shadow: 0 0 24px rgba(240,200,105,.4); opacity: 0; animation: sp-wv 2.4s ease-out forwards; }
+@keyframes sp-wv { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(60); opacity: 0; } }
