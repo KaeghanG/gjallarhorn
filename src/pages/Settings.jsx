@@ -5,6 +5,7 @@ import { THEME_PRESETS } from '../data/themePresets.js';
 import CouchSplash from '../components/couch/CouchSplash.jsx';
 import Splash, { SPLASH_STYLES } from '../components/couch/Splashes.jsx';
 import ChatSettings from '../components/ChatSettings.jsx';
+import DiscordSettings from '../components/DiscordSettings.jsx';
 import { motion } from 'framer-motion';
 import { FolderOpen } from 'lucide-react';
 import { PageHead, Switch, SectionHead, stagger, rise } from '../components/ui.jsx';
@@ -103,6 +104,8 @@ export default function SettingsPage({ settings, saveSettings, library }) {
       <div className="section">
         <SectionHead rune="ᚲ" title="Steam chat" />
       <ChatSettings />
+      <SectionHead rune="ᚦ" title="Discord" />
+      <div style={{ marginBottom: 20 }}><DiscordSettings /></div>
       <SectionHead rune="ᛊ" title="Store accounts" />
         <div className="glass" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>

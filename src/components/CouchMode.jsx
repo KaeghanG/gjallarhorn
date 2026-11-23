@@ -516,7 +516,7 @@ export default function CouchMode({ library, settings, saveSettings, onClose, to
 
   useEffect(() => { if (TABS[tab]?.id === 'store' && !storeData) window.gjallar.storeFeatured().then(setStoreData).catch(() => setStoreData([])); }, [tab, storeData]);
   // The in-game menu asks couch mode to open a specific page (Friends, Downloads, Power…).
-  useEffect(() => window.gjallar.onCouchPage((pg) => { setLaunching(null); if (pg === 'friends') setFriendsOpen(true); if (pg === 'downloads') setDlOpen(true); if (pg === 'power') setPowerOpen(true); if (pg === 'quick') setQaOpen(true); if (pg === 'pads') setPadsOpen(true); }), []);
+  useEffect(() => window.gjallar.onCouchPage((pg) => { setLaunching(null); if (pg === 'friends') setFriendsOpen(true); if (pg === 'downloads') setDlOpen(true); if (pg === 'power') setPowerOpen(true); if (pg === 'quick') setQaOpen(true); if (pg === 'pads') setPadsOpen(true); if (pg === 'reports') setRepOpen(true); if (TABS.some((t) => t.id === pg)) gotoTab(pg); }), []);
   // Home/Guide tap while couch mode is already focused: close any popups and jump to the Home tab (like Steam's Home button).
   useEffect(() => window.gjallar.onCouchHome(() => { setLaunching(null); setMenu(null); setPage(null); setFriendsOpen(false); setShotItems(null); setInstallTile(null); setDlOpen(false); setQaOpen(false); setAchGame(null); setWsGame(null); setRepOpen(false); setPadsOpen(false); setActOpen(false); setPowerOpen(false); setIdle(false); gotoTab('home'); }), []);
   const switchTab = (d) => { const n = (tab + d + TABS.length) % TABS.length; setTab(n); setPos({ r: TABS[n].id === 'library' ? 1 : 0, c: 0 }); blip('tab', sounds); };

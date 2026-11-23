@@ -42,6 +42,7 @@ const DEFAULTS = {
   steamKey: '', // Steam Web API key (owned games list)
   steamId: '', // optional override; default = most recent login in loginusers.vdf
   couchSounds: true,
+  discord: { enabled: false, clientId: '' }, // Rich Presence only (sets our own status; never reads friends/messages)
 
   reduceMotion: false,
 };

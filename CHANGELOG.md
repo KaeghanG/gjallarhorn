@@ -3,6 +3,8 @@
 ## Unreleased
 
 **New**
+- Discord Rich Presence (Settings > Discord): shows "Playing X" on your Discord profile while you play. Needs a free one-time Discord application ID (instructions in Settings); sets only your own status, never reads friends, servers or messages
+- "Find me a game" in Store & Deals: pick a genre plus any mood/feature tags (Souls-like, Roguelike, Cozy, Co-op, 50+ more) and get matching games straight from Steam's own tag search
 - Launch profiles: save named sets of launch arguments per game; the active one is added on Play (desktop: Library > game > Launch profiles; couch: Options > Launch profile)
 - Desktop Screenshots page with lightbox, per-game filter, copy and show in folder
 - Play reports: a Compare games table (time, GPU use, temperature, power, VRAM per game)

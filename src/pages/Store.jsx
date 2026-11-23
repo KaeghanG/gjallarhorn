@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Flame, Crown, Percent, Star, Clock3 } from 'lucide-react';
+import { Search, Flame, Crown, Percent, Star, Clock3, Compass } from 'lucide-react';
 import { PageHead, Skeletons, Empty, stagger, TiltCard, Img, useAsync } from '../components/ui.jsx';
 import { DealCard } from '../components/Cards.jsx';
+import GameFinder from '../components/GameFinder.jsx';
 import { deals, searchGames, stores, money, steamImg } from '../api.js';
 
 const SORTS = [
@@ -32,13 +33,15 @@ export function cheapestPerGame(list) {
   return list.filter((d) => best.get(d.gameID) === d);
 }
 
-export default function StorePage({ openGame, query, setQuery }) {
+export default function StorePage({ openGame, query, setQuery, library }) {
   const [q, setQ] = useState(query || '');
   const [sort, setSort] = useState('Deal Rating');
   const [store, setStore] = useState(STORE_FILTERS[0].ids);
   const [max, setMax] = useState(60);
   const [aaa, setAaa] = useState(false);
+  const [finderOpen, setFinderOpen] = useState(false);
   useEffect(() => setQ(query || ''), [query]);
+  const ownedAppids = (library?.games || []).map((g) => Number(g.appid)).filter(Boolean);
 
   const st = useAsync(stores, []);
   const results = useAsync(() => (query ? searchGames(query) : Promise.resolve(null)), [query]);
@@ -55,9 +58,14 @@ export default function StorePage({ openGame, query, setQuery }) {
         </div>
         <button className="btn gold lg" type="submit">Search</button>
         {query && <button className="btn lg ghost" type="button" onClick={() => { setQ(''); setQuery(''); }}>Clear</button>}
+        <button className={`btn lg ${finderOpen ? 'gold' : 'ghost'}`} type="button" onClick={() => setFinderOpen((v) => !v)}>
+          <Compass size={16} />Find me a game
+        </button>
       </form>
 
-      {query ? (
+      {finderOpen ? (
+        <GameFinder openGame={openGame} ownedAppids={ownedAppids} />
+      ) : query ? (
         <>
           <div className="section-head"><span className="rune">ᚠ</span><h2>Results for “{query}”</h2><div className="line" /></div>
           {results.loading ? <Skeletons n={8} /> : results.error ? <div className="err">{results.error}</div> : !results.data?.length ? (

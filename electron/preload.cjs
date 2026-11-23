@@ -101,6 +101,8 @@ contextBridge.exposeInMainWorld('gjallar', {
   profilesGet: (k) => call('profiles:get', k),
   profilesSet: (k, v) => call('profiles:set', k, v),
   storeFeatured: () => call('store:featured'), storeSearch: (t) => call('store:search', t),
+  finderTags: () => call('finder:tags'), finderSearch: (tags, excludeOwnedAppids) => call('finder:search', tags, excludeOwnedAppids),
+  discordGet: () => call('discord:get'), discordSet: (patch) => call('discord:set', patch),
   chat: {
     status: () => call('chat:status'), connect: () => call('chat:connect'), disconnect: () => call('chat:disconnect'), friends: () => call('chat:friends'), invites: () => call('chat:invites'), dismissInvite: (id) => call('chat:dismissInvite', id),
     history: (id) => call('chat:history', id), send: (id, t) => call('chat:send', id, t), accept: (id) => call('chat:accept', id), decline: (id) => call('chat:decline', id),

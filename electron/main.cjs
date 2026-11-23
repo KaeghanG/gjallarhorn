@@ -18,6 +18,7 @@ const extras = require('./lib/extras.cjs');
 const round4 = require('./lib/round4.cjs');
 const padwatch = require('./lib/padwatch.cjs');
 const couch = require('./lib/couch.cjs');
+const discord = require('./lib/discord.cjs');
 
 app.setName('Gjallarhorn');
 // Dev/test helper: run a second copy with its own data folder (the single-instance lock is per data folder).
@@ -314,6 +315,16 @@ function buildTray() {
   ]));
 }
 
+// ---------- Discord Rich Presence (shows your status; never reads friends or messages) ----------
+function discordIdle() {
+  if (couchActive) discord.setActivity({ details: 'In couch mode', state: 'Browsing the library', largeText: 'Gjallarhorn' });
+  else discord.setActivity({ details: 'In the hub', state: 'Browsing the library', largeText: 'Gjallarhorn' });
+}
+function startDiscordIfEnabled() {
+  const d = settings.load().discord;
+  if (d?.enabled) discord.connect(d.clientId); else discord.disconnect();
+}
+
 // ---------- sessions: boost + playtime + auto save backup ----------
 function startSession(game, target) {
   const s = settings.load();
@@ -335,6 +346,8 @@ function startSession(game, target) {
       }
       win?.webContents.send('session', ev);
       gameRunning = ev.state === 'running' || ev.state === 'waiting'; if (ev.state === 'ended' || ev.state === 'gave-up') yieldUntil = 0; pinCouch();
+      if (ev.state === 'running') discord.setActivity({ details: `Playing ${ev.name}`, state: 'via Gjallarhorn', startedAt: Date.now(), largeText: ev.name, button: game.appid ? { label: 'View on Steam', url: `https://store.steampowered.com/app/${game.appid}` } : undefined });
+      if (ev.state === 'ended' || ev.state === 'gave-up') discordIdle();
       // Big Picture behaviour: when the game closes, bring couch mode back to the front and give it the controller again.
       if (ev.state === 'ended' || ev.state === 'gave-up') { padSuspended = false; hideOverlay(); }
       if ((ev.state === 'ended' || ev.state === 'gave-up') && couchActive && win) {
@@ -395,7 +408,7 @@ handle('owned:install', async (g) => {
 let couchActive = false;
 // Couch mode stays above Steam (Big Picture / main window) while no game is running; a running game gets the screen back.
 let gameRunning = false;
-function pinCouch() { try { if (win && !win.isDestroyed() && !homeLock && (!couchActive || gameRunning)) win.setAlwaysOnTop(false); } catch {} }
+function pinCouch() { try { if (win && !win.isDestroyed() && (!couchActive || (!homeLock && gameRunning))) win.setAlwaysOnTop(false); } catch {} }
 // Briefly float above Steam after a Guide/Home press (never permanently: emulators and games must be able to cover us).
 let pinTimer = null;
 // Couch mode is a shell: while it is open and nothing launched by us is running, keep it truly fullscreen and above the taskbar/Steam.
@@ -597,7 +610,9 @@ let sleepBlocker = null;
 handle('win:fullscreen', (on) => {
   const { powerSaveBlocker } = require('electron');
   couchActive = !!on;
+  if (!on) { homeLock = false; yieldUntil = 0; } // leaving couch mode: drop every 'stay on top' lock so Gjallarhorn behaves like a normal window again
   pinCouch();
+  if (!gameRunning) discordIdle();
   if (!on) padSuspended = false;
   // While couch mode is open the PC must not go to sleep mid-session (the screen may still turn off).
   if (on && sleepBlocker == null) sleepBlocker = powerSaveBlocker.start('prevent-app-suspension');
@@ -657,6 +672,17 @@ handle('shots:list', async () => {
 const storefront = require('./lib/storefront.cjs');
 handle('store:featured', () => storefront.featured((app.getLocaleCountryCode() || 'US')));
 handle('store:search', (term) => storefront.search(String(term || ''), (app.getLocaleCountryCode() || 'US')));
+const gamefinder = require('./lib/gamefinder.cjs');
+handle('finder:tags', () => ({ genres: gamefinder.GENRES, moods: gamefinder.MOODS }));
+handle('finder:search', (tags, excludeOwnedAppids) => gamefinder.find({ tags, cc: app.getLocaleCountryCode() || 'US', excludeOwnedAppids }));
+handle('discord:get', () => ({ ...settings.load().discord, ...discord.state() }));
+handle('discord:set', (patch) => {
+  const d = { ...settings.load().discord, ...patch };
+  settings.save({ discord: d });
+  startDiscordIfEnabled();
+  if (d.enabled) setTimeout(discordIdle, 1500); // give the IPC handshake a moment before the first activity push
+  return { ...d, ...discord.state() };
+});
 handle('settings:get', () => settings.load());
 handle('settings:set', (patch) => settings.save(patch));
 
@@ -736,15 +762,59 @@ handle('chat:decline', (sid) => steamchat.decline(String(sid)));
 handle('chat:join', (sid) => { const l = steamchat.joinLink(String(sid)); if (!l) throw new Error('This friend is not in a game'); return shell.openExternal(l); });
 handle('chat:openSteam', (sid) => shell.openExternal(steamchat.openChatLink(String(sid))));
 
-app.on('second-instance', () => showMain());
+// ---------- gjallarhorn:// links (used by the HornVoice voice tool, and handy for shortcuts) ----------
+//   gjallarhorn://launch?name=Elden%20Ring   gjallarhorn://couch   gjallarhorn://home   gjallarhorn://menu   gjallarhorn://page?name=friends
+const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+function findGame(query) {
+  const q = normName(query);
+  if (!q) return null;
+  const games = library.scanAll(settings.load().customGames);
+  const words = q.split(' ');
+  let best = null, bestScore = 0;
+  for (const g of games) {
+    const n = normName(g.name);
+    let sc = 0;
+    if (n === q) sc = 100;
+    else if (n.startsWith(q)) sc = 80;
+    else if (n.includes(q)) sc = 65;
+    else { const hit = words.filter((w) => w.length > 2 && n.includes(w)).length; if (hit) sc = (hit / words.length) * 50; }
+    if (sc > bestScore) { bestScore = sc; best = g; }
+  }
+  return bestScore >= 30 ? best : null;
+}
+async function handleDeepLink(url) {
+  let u;
+  try { u = new URL(url); } catch { return; }
+  if (u.protocol !== 'gjallarhorn:') return;
+  const action = (u.hostname || u.pathname.replace(/^\/+/, '')).toLowerCase();
+  const name = u.searchParams.get('name') || '';
+  dbgLog('deep link: ' + action + (name ? ' ' + name : ''));
+  try {
+    if (action === 'launch') { const g = findGame(name); if (g) await launchGame(g); else dbgLog('deep link: no game matches "' + name + '"'); }
+    else if (action === 'couch') { bringCouch(); }
+    else if (action === 'home') { bringCouch(); for (const ms of [500, 1100, 1800]) setTimeout(() => win?.webContents.send('couch-home'), ms); }
+    else if (action === 'menu') { if (!showOverlay()) bringCouch(); }
+    else if (action === 'page') { bringCouch(); for (const ms of [600, 1300]) setTimeout(() => win?.webContents.send('couch-page', name), ms); }
+  } catch (e) { dbgLog('deep link failed: ' + e.message); }
+}
+handle('deeplink:find', (name) => { const g = findGame(name); return g ? { name: g.name, key: g.key } : null; });
+app.on('second-instance', (_e, argv) => {
+  const link = (argv || []).find((a) => /^gjallarhorn:\/\//i.test(a));
+  if (link) return void handleDeepLink(link);
+  showMain();
+});
 app.on('before-quit', () => { app.isQuitting = true; });
-app.on('will-quit', () => { globalShortcut.unregisterAll(); try { require('fs').unlinkSync(require('path').join(app.getPath('userData'), 'hide-taskbar.flag')); } catch {} padwatch.stop(); padwatch.showTaskbar(true); });
+app.on('will-quit', () => { globalShortcut.unregisterAll(); try { require('fs').unlinkSync(require('path').join(app.getPath('userData'), 'hide-taskbar.flag')); } catch {} padwatch.stop(); padwatch.showTaskbar(true); discord.disconnect(); });
 if (gotLock) app.whenReady().then(() => {
   preferDiscreteGpu(process.execPath);
+  try { if (app.isPackaged) app.setAsDefaultProtocolClient('gjallarhorn'); } catch {}
+  { const link = process.argv.find((a) => /^gjallarhorn:\/\//i.test(a)); if (link) setTimeout(() => handleDeepLink(link), 2500); }
   padwatch.setTaskbarHidden(false); // a crash while in couch mode must never leave the taskbar hidden
   createWindow();
   registerHotkey();
   setTimeout(() => steamchat.autoStart(), 4000); // quietly reconnect Steam chat if the user connected before
+  startDiscordIfEnabled();
+  setTimeout(discordIdle, 2500);
   startPadWatch();
   buildTray();
   setInterval(buildTray, 15 * 60 * 1000);
