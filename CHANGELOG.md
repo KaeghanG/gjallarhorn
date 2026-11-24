@@ -24,7 +24,7 @@
 - New docs/COMPARISON.md: an honest comparison with Steam Big Picture, Playnite, GOG Galaxy, LaunchBox and Heroic
 
 **Fixed**
-- Game invites sent in a Friends chat now show an "Accept & join" button on the message itself, instead of only in the popup toast (which disappears after 15 minutes) - fixes invites with no visible way to accept them
+- Game invites sent in a Friends chat now show a working "Accept & join" button on the message itself, instead of only in the popup toast (which disappears after 15 minutes) - the real invite text carries no join link at all (it's just "Invited you to play a game!"), so the button now joins via the friend's live rich presence, the same reliable path the header's Join game button already used
 - One launch screen instead of two: the couch-mode intro is skipped when the app-start splash just played, and the splash now covers the very first frame
 - Settings > Couch mode intro > Preview now shows over the whole window even when the page is scrolled
 - Back + Start always opens the in-game menu (the controller shortcut is no longer user-selectable, so a stale setting cannot disable it) and the press is logged

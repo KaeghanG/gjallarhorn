@@ -52,8 +52,12 @@ function avatarUrl(u) {
   return h && !/^0+$/.test(h) ? `https://avatars.steamstatic.com/${h}_full.jpg` : null;
 }
 function stripBb(s) { return String(s || '').replace(/\\\[/g, '[').replace(/\[\/?[a-z0-9]+[^\]]*\]/gi, ''); }
-// A game invite arrives as a chat message carrying a join link - pull it out so it survives into the saved history.
-function extractJoin(text) { return String(text || '').match(/steam:\/\/joinlobby\/\d+\/\d+\/\d+/)?.[0] || null; }
+// A game invite arrives as a chat message wrapped in Steam's own [gameinvite] BBCode tag (no join link in the text -
+// the only reliable way to actually join is the sender's live rich presence, same as the "Join game" button uses).
+function isGameInvite(rawMessage, plainText) {
+  if (/\[gameinvite\b/i.test(String(rawMessage || ''))) return true;
+  return /invited you to play a game/i.test(String(plainText || '')); // fallback for messages saved before the tag check, or without the bbcode wrapper
+}
 
 // ---- friends -------------------------------------------------------------------------------------------------------
 // Steam only sends a game name for non-Steam games; resolve "App 12345" through the store (cached, filled in the background).
@@ -102,8 +106,8 @@ function loadHist() {
   histLoaded = true;
   try {
     const j = JSON.parse(fs.readFileSync(histFile(), 'utf8'));
-    // Backfill: messages saved before this build tracked `join` links never got one - recover it from the text now.
-    for (const [sid, list] of Object.entries(j)) if (Array.isArray(list)) histories.set(sid, list.map((m) => ('join' in m ? m : { ...m, join: extractJoin(m.text) })));
+    // Backfill: messages saved before invite-detection existed (or used the old broken join-link check) never got flagged - recover it from the saved text now.
+    for (const [sid, list] of Object.entries(j)) if (Array.isArray(list)) histories.set(sid, list.map((m) => ({ ...m, invite: m.invite || isGameInvite(null, m.text) })));
   } catch {}
 }
 function saveHistSoon() {
@@ -142,12 +146,12 @@ function attach(c) {
   c.chat.on('friendMessage', (m) => {
     const sid = m.steamid_friend.getSteamID64();
     const text = stripBb(m.message_no_bbcode ?? m.message);
-    const join = extractJoin(text);
-    push(sid, { from: 'them', text, ts: +m.server_timestamp || Date.now(), ord: m.ordinal || 0, join });
+    const invite = isGameInvite(m.message);
+    push(sid, { from: 'them', text, ts: +m.server_timestamp || Date.now(), ord: m.ordinal || 0, invite });
     unread.set(sid, (unread.get(sid) || 0) + 1);
-    if (join) gameInvites.set(sid, { id: sid, name: persona(sid).name, join, appid: persona(sid).appid, ts: Date.now() });
-    emit({ type: 'message', id: sid, name: persona(sid).name, text, join });
-    if (join) emit({ type: 'gameinvite', invite: gameInvites.get(sid) });
+    if (invite) gameInvites.set(sid, { id: sid, name: persona(sid).name, join: joinLink(sid), appid: persona(sid).appid, ts: Date.now() });
+    emit({ type: 'message', id: sid, name: persona(sid).name, text, invite });
+    if (invite) emit({ type: 'gameinvite', invite: gameInvites.get(sid) });
   });
   c.chat.on('friendMessageEcho', (m) => { const id = m.steamid_friend.getSteamID64(); push(id, { from: 'me', text: stripBb(m.message_no_bbcode ?? m.message), ts: +m.server_timestamp || Date.now(), ord: m.ordinal || 0 }); emit({ type: 'message', id, name: persona(id).name, text: '', echo: true }); });
   // steam-user's own autoRelogin reconnects; a second manual login here would race it.
@@ -235,7 +239,7 @@ async function history(sid) {
       const mine = client.steamID.getSteamID64();
       for (const m of r.messages || []) {
         const text = stripBb(m.message);
-        push(sid, { from: m.sender.getSteamID64() === mine ? 'me' : 'them', text, ts: +m.server_timestamp, ord: m.ordinal || 0, join: extractJoin(text) });
+        push(sid, { from: m.sender.getSteamID64() === mine ? 'me' : 'them', text, ts: +m.server_timestamp, ord: m.ordinal || 0, invite: isGameInvite(m.message, text) });
       }
       client.chat.ackFriendMessage(sid, new Date());
     } catch {}
@@ -282,7 +286,7 @@ module.exports = {
 if (process.env.GJ_MOCK_CHAT) {
   const mk = (id, name, state, game, extra = {}) => ({ id, name, avatar: null, state, stateName: ['Offline', 'Online', 'Busy', 'Away'][state] || 'Online', game, appid: game ? '1245620' : null, presence: game ? 'In the Lands Between' : null, joinable: !!game, unread: 0, ...extra });
   const fr = { friends: [mk('1', 'Brynja', 1, 'ELDEN RING', { unread: 2 }), mk('2', 'Ragnar', 1, null), mk('3', 'Sigrid', 3, null), mk('4', 'Leif', 0, null)], invites: [mk('9', 'Freya', 1, null)] };
-  const hist = [{ from: 'them', text: 'You on tonight?', ts: 1 }, { from: 'me', text: 'Yeah, give me 10 minutes', ts: 2 }, { from: 'them', text: 'Joining the Lands Between, come grab me', ts: 3, join: 'steam://joinlobby/1245620/1/1' }];
+  const hist = [{ from: 'them', text: 'You on tonight?', ts: 1 }, { from: 'me', text: 'Yeah, give me 10 minutes', ts: 2 }, { from: 'them', text: 'Invited you to play a game!', ts: 3, invite: true }];
   module.exports.status = () => ({ status: 'online', qr: null, error: null, me: { id: '0' } });
   module.exports.friends = () => fr;
   module.exports.pendingInvites = () => ({ requests: fr.invites, games: [{ id: '1', name: 'Brynja', join: 'steam://joinlobby/1245620/1/1', appid: '1245620', ts: Date.now() }] });

@@ -15,7 +15,8 @@ export default function ChatInvites() {
   const run = async (fn) => { setErr(''); try { await fn(); } catch (e) { setErr(e.message); } load(); };
   const items = [
     ...inv.games.map((g) => ({ id: 'g' + g.id, icon: Gamepad2, title: `${g.name} invited you to play`, yes: 'Join', no: 'Dismiss',
-      onYes: () => run(async () => { await window.gjallar.open(g.join); await window.gjallar.chat.dismissInvite(g.id); }), onNo: () => run(() => window.gjallar.chat.dismissInvite(g.id)) })),
+      // Join via the friend's current rich presence (live at click time), not a link captured when the invite arrived - that one can go stale.
+      onYes: () => run(async () => { await window.gjallar.chat.join(g.id); await window.gjallar.chat.dismissInvite(g.id); }), onNo: () => run(() => window.gjallar.chat.dismissInvite(g.id)) })),
     ...inv.requests.map((r) => ({ id: 'r' + r.id, icon: UserPlus, title: `${r.name} sent you a friend request`, yes: 'Accept', no: 'Decline',
       onYes: () => run(() => window.gjallar.chat.accept(r.id)), onNo: () => run(() => window.gjallar.chat.decline(r.id)) })),
   ];

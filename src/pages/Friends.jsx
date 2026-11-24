@@ -111,10 +111,13 @@ export default function Friends() {
             <div className="fp-msgs">
               {msgs.length === 0 && <div className="muted" style={{ margin: 'auto' }}>No messages yet. Say hi.</div>}
               {msgs.map((m, i) => (
-                <div key={i} className={`fp-msg ${m.mine || m.me || m.from === 'me' ? 'me' : 'them'}`} style={m.join ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined}>
+                <div key={i} className={`fp-msg ${m.mine || m.me || m.from === 'me' ? 'me' : 'them'}`} style={m.invite ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined}>
                   <span>{m.text || m.message}</span>
-                  {m.join && (
-                    <button className="btn sm gold" onClick={() => { window.gjallar.open(m.join); window.gjallar.chat.dismissInvite(cur.id).catch(() => {}); }}>
+                  {m.invite && (
+                    <button className="btn sm gold" onClick={() => {
+                      window.gjallar.chat.join(cur.id).catch((e) => setErr(e.message));
+                      window.gjallar.chat.dismissInvite(cur.id).catch(() => {});
+                    }}>
                       <Play size={12} fill="currentColor" />Accept &amp; join
                     </button>
                   )}
