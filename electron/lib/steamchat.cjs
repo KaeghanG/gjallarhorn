@@ -52,6 +52,8 @@ function avatarUrl(u) {
   return h && !/^0+$/.test(h) ? `https://avatars.steamstatic.com/${h}_full.jpg` : null;
 }
 function stripBb(s) { return String(s || '').replace(/\\\[/g, '[').replace(/\[\/?[a-z0-9]+[^\]]*\]/gi, ''); }
+// A game invite arrives as a chat message carrying a join link - pull it out so it survives into the saved history.
+function extractJoin(text) { return String(text || '').match(/steam:\/\/joinlobby\/\d+\/\d+\/\d+/)?.[0] || null; }
 
 // ---- friends -------------------------------------------------------------------------------------------------------
 // Steam only sends a game name for non-Steam games; resolve "App 12345" through the store (cached, filled in the background).
@@ -100,7 +102,8 @@ function loadHist() {
   histLoaded = true;
   try {
     const j = JSON.parse(fs.readFileSync(histFile(), 'utf8'));
-    for (const [sid, list] of Object.entries(j)) if (Array.isArray(list)) histories.set(sid, list);
+    // Backfill: messages saved before this build tracked `join` links never got one - recover it from the text now.
+    for (const [sid, list] of Object.entries(j)) if (Array.isArray(list)) histories.set(sid, list.map((m) => ('join' in m ? m : { ...m, join: extractJoin(m.text) })));
   } catch {}
 }
 function saveHistSoon() {
@@ -139,9 +142,9 @@ function attach(c) {
   c.chat.on('friendMessage', (m) => {
     const sid = m.steamid_friend.getSteamID64();
     const text = stripBb(m.message_no_bbcode ?? m.message);
-    push(sid, { from: 'them', text, ts: +m.server_timestamp || Date.now(), ord: m.ordinal || 0 });
+    const join = extractJoin(text);
+    push(sid, { from: 'them', text, ts: +m.server_timestamp || Date.now(), ord: m.ordinal || 0, join });
     unread.set(sid, (unread.get(sid) || 0) + 1);
-    const join = text.match(/steam:\/\/joinlobby\/\d+\/\d+\/\d+/)?.[0] || null; // a game invite arrives as a message carrying a join link
     if (join) gameInvites.set(sid, { id: sid, name: persona(sid).name, join, appid: persona(sid).appid, ts: Date.now() });
     emit({ type: 'message', id: sid, name: persona(sid).name, text, join });
     if (join) emit({ type: 'gameinvite', invite: gameInvites.get(sid) });
@@ -230,7 +233,10 @@ async function history(sid) {
     try {
       const r = await client.chat.getFriendMessageHistory(sid, { maxCount: 100, wantBbcode: false });
       const mine = client.steamID.getSteamID64();
-      for (const m of r.messages || []) push(sid, { from: m.sender.getSteamID64() === mine ? 'me' : 'them', text: stripBb(m.message), ts: +m.server_timestamp, ord: m.ordinal || 0 });
+      for (const m of r.messages || []) {
+        const text = stripBb(m.message);
+        push(sid, { from: m.sender.getSteamID64() === mine ? 'me' : 'them', text, ts: +m.server_timestamp, ord: m.ordinal || 0, join: extractJoin(text) });
+      }
       client.chat.ackFriendMessage(sid, new Date());
     } catch {}
   }
@@ -276,7 +282,7 @@ module.exports = {
 if (process.env.GJ_MOCK_CHAT) {
   const mk = (id, name, state, game, extra = {}) => ({ id, name, avatar: null, state, stateName: ['Offline', 'Online', 'Busy', 'Away'][state] || 'Online', game, appid: game ? '1245620' : null, presence: game ? 'In the Lands Between' : null, joinable: !!game, unread: 0, ...extra });
   const fr = { friends: [mk('1', 'Brynja', 1, 'ELDEN RING', { unread: 2 }), mk('2', 'Ragnar', 1, null), mk('3', 'Sigrid', 3, null), mk('4', 'Leif', 0, null)], invites: [mk('9', 'Freya', 1, null)] };
-  const hist = [{ from: 'them', text: 'You on tonight?', ts: 1 }, { from: 'me', text: 'Yeah, give me 10 minutes', ts: 2 }, { from: 'them', text: 'Joining the Lands Between, come grab me', ts: 3 }];
+  const hist = [{ from: 'them', text: 'You on tonight?', ts: 1 }, { from: 'me', text: 'Yeah, give me 10 minutes', ts: 2 }, { from: 'them', text: 'Joining the Lands Between, come grab me', ts: 3, join: 'steam://joinlobby/1245620/1/1' }];
   module.exports.status = () => ({ status: 'online', qr: null, error: null, me: { id: '0' } });
   module.exports.friends = () => fr;
   module.exports.pendingInvites = () => ({ requests: fr.invites, games: [{ id: '1', name: 'Brynja', join: 'steam://joinlobby/1245620/1/1', appid: '1245620', ts: Date.now() }] });
